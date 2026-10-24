@@ -1,0 +1,171 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Dino Runner</title>
+  <meta name="description" content="An ad-free, customizable endless dino runner.">
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <header class="topbar">
+    <h1 class="brand">🦖 <span data-i18n="title">Dino Runner</span></h1>
+    <nav class="toolbar" aria-label="Game options">
+      <button type="button" id="btn-nickname">👤 <span id="nickname-label">Nickname</span></button>
+      <button type="button" id="btn-sound"><span id="sound-icon">🔊</span> <span data-i18n="sound">Sound</span></button>
+      <button type="button" id="btn-zoom">🔍 <span id="zoom-label">1x</span></button>
+      <button type="button" id="btn-screenshot">📸 <span data-i18n="screenshot">Screenshot</span></button>
+      <button type="button" id="btn-customize">🎨 <span data-i18n="customize">Customize</span></button>
+      <button type="button" id="btn-embed">&lt;/&gt; <span data-i18n="embed">Embed</span></button>
+      <select id="lang" aria-label="Language">
+        <option value="en">English</option>
+        <option value="pt-BR">Português (Brasil)</option>
+        <option value="ja">日本語</option>
+        <option value="es">Español</option>
+      </select>
+    </nav>
+  </header>
+
+  <div id="halloween-banner" class="banner" hidden>
+    <span data-i18n="halloweenBanner">🎃 Halloween Dino is here!</span>
+    <button type="button" id="btn-halloween" data-i18n="playHalloween">Play</button>
+  </div>
+
+  <main id="play-area">
+    <div class="stage" id="stage">
+      <canvas id="game" aria-label="Dino Runner game"></canvas>
+      <div class="overlay" id="overlay">
+        <p class="overlay-title" id="overlay-title"></p>
+        <button type="button" class="restart" id="btn-restart" aria-label="Restart" hidden>↻</button>
+        <p class="overlay-hint" id="overlay-hint"></p>
+        <p class="overlay-note" id="overlay-note" data-i18n="practice" hidden></p>
+      </div>
+    </div>
+    <p class="controls" data-i18n="controls">Press Space or tap to jump · press ↓ or hold the bottom to duck</p>
+  </main>
+
+  <section class="panel">
+    <h2 data-i18n="versions">Versions</h2>
+    <div class="chips" id="themes"></div>
+  </section>
+
+  <section class="panel">
+    <h2 data-i18n="share">Share your score</h2>
+    <div class="chips share">
+      <button type="button" class="chip" id="share-native">📤</button>
+      <a class="chip" id="share-x" target="_blank" rel="noopener">X</a>
+      <a class="chip" id="share-fb" target="_blank" rel="noopener">Facebook</a>
+      <a class="chip" id="share-wa" target="_blank" rel="noopener">WhatsApp</a>
+      <a class="chip" id="share-tg" target="_blank" rel="noopener">Telegram</a>
+      <button type="button" class="chip" id="share-copy" data-i18n="copyLink">Copy link</button>
+    </div>
+  </section>
+
+  <section class="panel boards">
+    <div>
+      <h2 data-i18n="todayTop">5 highest scores of the day</h2>
+      <ol id="board-today"></ol>
+    </div>
+    <div>
+      <h2 data-i18n="allTimeTop">Top 5 of all time</h2>
+      <ol id="board-all"></ol>
+    </div>
+    <p class="best"><span data-i18n="personalBest">Your best</span>: <b id="personal-best">0</b>
+      <button type="button" class="link" id="btn-clear-scores" data-i18n="clearScores">Clear scores</button></p>
+  </section>
+
+  <footer class="panel footer">
+    <p data-i18n="tagline">The endless dino runner — no ads, fully customizable.</p>
+  </footer>
+
+  <!-- Nickname -->
+  <dialog id="dlg-nickname">
+    <form method="dialog">
+      <label for="nickname-input" data-i18n="nicknamePrompt">Your nickname for the leaderboard</label>
+      <input id="nickname-input" name="nickname" maxlength="20" autocomplete="nickname">
+      <menu>
+        <button value="cancel" data-i18n="cancel">Cancel</button>
+        <button value="save" class="primary" data-i18n="save">Save</button>
+      </menu>
+    </form>
+  </dialog>
+
+  <!-- Embed -->
+  <dialog id="dlg-embed">
+    <form method="dialog">
+      <p data-i18n="embedHelp">Paste this into your site to embed the game:</p>
+      <textarea id="embed-code" rows="4" readonly></textarea>
+      <menu><button value="close" class="primary" data-i18n="close">Close</button></menu>
+    </form>
+  </dialog>
+
+  <!-- Customize -->
+  <dialog id="dlg-customize">
+    <form method="dialog" class="customize">
+      <h2 data-i18n="customize">Customize</h2>
+
+      <fieldset>
+        <legend data-i18n="theme">Theme</legend>
+        <select name="theme" aria-label="Theme"></select>
+      </fieldset>
+
+      <fieldset>
+        <legend data-i18n="background">Background</legend>
+        <div class="row">
+          <label><input type="radio" name="bgMode" value="theme"> <span data-i18n="bgTheme">Theme default</span></label>
+          <label><input type="radio" name="bgMode" value="color"> <span data-i18n="bgColor">Solid color</span></label>
+          <label><input type="radio" name="bgMode" value="image"> <span data-i18n="bgImage">Image</span></label>
+        </div>
+        <div class="row only-color">
+          <input type="color" name="sky" aria-label="Background color">
+        </div>
+        <div class="only-image">
+          <div class="row">
+            <label class="file"><input type="file" name="image" accept="image/*"> <span data-i18n="uploadImage">Upload image…</span></label>
+            <span id="image-name"></span>
+          </div>
+          <p class="error" id="image-error"></p>
+          <div class="row">
+            <label><span data-i18n="imageFit">Fit</span>
+              <select name="imageMode">
+                <option value="cover" data-i18n="fitCover">Cover</option>
+                <option value="tile" data-i18n="fitTile">Tile</option>
+                <option value="stretch" data-i18n="fitStretch">Stretch</option>
+              </select>
+            </label>
+            <label><input type="checkbox" name="imageScroll"> <span data-i18n="imageScroll">Scroll with the game</span></label>
+          </div>
+          <label class="row"><span data-i18n="opacity">Opacity</span>
+            <input type="range" name="imageOpacity" min="0.1" max="1" step="0.05"></label>
+        </div>
+      </fieldset>
+
+      <fieldset>
+        <legend data-i18n="colors">Colors</legend>
+        <div class="row">
+          <label><input type="checkbox" name="dinoOn"> <span data-i18n="dinoColor">Dino</span> <input type="color" name="dino" value="#535353"></label>
+          <label><input type="checkbox" name="obstacleOn"> <span data-i18n="obstacleColor">Obstacles</span> <input type="color" name="obstacle" value="#535353"></label>
+          <label><input type="checkbox" name="groundOn"> <span data-i18n="groundColor">Ground</span> <input type="color" name="ground" value="#535353"></label>
+        </div>
+      </fieldset>
+
+      <fieldset>
+        <legend data-i18n="gameplay">Gameplay</legend>
+        <label class="row"><input type="checkbox" name="dayNightCycle"> <span data-i18n="dayNight">Day / night cycle</span></label>
+        <label class="row"><span data-i18n="speed">Speed</span>
+          <input type="range" name="speed" min="0.5" max="2" step="0.25"> <output id="speed-value">1×</output></label>
+        <label class="row"><input type="checkbox" name="invincible"> <span data-i18n="invincible">Invincible (practice)</span></label>
+        <p class="note" data-i18n="cheatNote">Scores are not saved while invincible or at a speed other than 1×.</p>
+      </fieldset>
+
+      <menu>
+        <button type="button" id="btn-reset-custom" data-i18n="resetCustom">Reset customizations</button>
+        <button value="close" class="primary" data-i18n="close">Close</button>
+      </menu>
+    </form>
+  </dialog>
+
+  <script type="module" src="src/main.js"></script>
+</body>
+</html>

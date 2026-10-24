@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Sprite gallery · Dino Runner</title>
+  <style>
+    body { font: 14px system-ui, sans-serif; margin: 16px; background: #eee; }
+    h2 { margin: 24px 0 8px; font-size: 15px; }
+    .row { display: flex; flex-wrap: wrap; gap: 12px; align-items: flex-end; padding: 12px; border-radius: 8px; }
+    figure { margin: 0; text-align: center; font-size: 11px; }
+    canvas { image-rendering: pixelated; display: block; margin: 0 auto 4px; }
+  </style>
+</head>
+<body>
+  <p>Every sprite from <code>src/art.js</code> in every theme from <code>src/themes.js</code>. Reload after editing.</p>
+  <div id="out"></div>
+  <script type="module">
+    import { ART, DINO_FRAMES } from '../src/art.js';
+    import { THEMES, buildPalette } from '../src/themes.js';
+    import { SpriteBank } from '../src/sprites.js';
+
+    const SCALE = 3;
+    const bank = new SpriteBank();
+    const out = document.getElementById('out');
+
+    for (const id of Object.keys(THEMES)) {
+      const palette = buildPalette(id, 0, {});
+      palette.key = id;
+      bank.use(palette);
+      const h = document.createElement('h2');
+      h.textContent = THEMES[id].name;
+      const row = document.createElement('div');
+      row.className = 'row';
+      const sky = palette.sky;
+      row.style.background = typeof sky === 'string' ? sky : `linear-gradient(${sky.gradient.join(',')})`;
+      row.style.color = palette.colors.text;
+
+      const show = (name, sprite) => {
+        const fig = document.createElement('figure');
+        const c = document.createElement('canvas');
+        c.width = sprite.canvas.width * SCALE;
+        c.height = sprite.canvas.height * SCALE;
+        const ctx = c.getContext('2d');
+        ctx.imageSmoothingEnabled = false;
+        ctx.globalAlpha = name.startsWith('dino') ? palette.dinoAlpha : 1;
+        ctx.drawImage(sprite.canvas, 0, 0, c.width, c.height);
+        fig.append(c, name);
+        row.append(fig);
+      };
+
+      for (const f of Object.keys(DINO_FRAMES)) show(`dino:${f}`, bank.dino(f));
+      for (const name of Object.keys(ART)) if (!['ground', 'skyline'].includes(name)) show(name, bank.get(name));
+      out.append(h, row);
+    }
+  </script>
+</body>
+</html>
