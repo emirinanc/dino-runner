@@ -152,24 +152,6 @@ a.chip { color: inherit; }
 
 .chips { display: flex; flex-wrap: wrap; gap: 8px; }
 
-.boards { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 8px 32px; }
-.boards ol { margin: 0; padding-left: 1.4em; }
-.boards li { padding: 2px 0; }
-.boards li span { display: inline-block; min-width: 9em; }
-.boards li.empty { list-style: none; margin-left: -1.4em; color: var(--muted); }
-.best { grid-column: 1 / -1; margin: 4px 0 0; color: var(--muted); }
-.best b { color: var(--fg); }
-
-.link {
-  margin-left: 12px;
-  border: 0;
-  background: none;
-  padding: 0;
-  color: var(--muted);
-  text-decoration: underline;
-  cursor: pointer;
-}
-
 .footer { color: var(--muted); font-size: 0.85rem; }
 
 /* ---- dialogs ---- */
@@ -234,3 +216,150 @@ body.embed { max-width: none; padding: 0; overflow: hidden; }
 body.embed > :not(#play-area):not(dialog) { display: none !important; }
 body.embed #play-area { padding: 0; min-height: 0; }
 body.embed .controls { display: none; }
+
+/* ---- learning: score card + breakdown (src/learn/scorecard.js) ---- */
+
+.score-card {
+  margin: 0 auto 8px;
+  padding: 16px;
+  border: 2px solid var(--line);
+  border-radius: 18px;
+  background: var(--chip);
+  text-align: center;
+}
+.score-card[hidden] { display: none; }
+.score-label { margin: 0; color: var(--muted); font-weight: 600; }
+
+.big-number {
+  display: inline-flex;
+  gap: 0.08em;
+  margin: 2px auto 0;
+  padding: 0 14px;
+  border-radius: 14px;
+  font: 800 clamp(56px, 14vw, 110px) / 1.05 var(--font);
+  letter-spacing: 0.02em;
+  transition: transform 0.2s, background-color 0.2s;
+}
+.number-words { margin: 4px 0 12px; font-size: clamp(20px, 4.5vw, 30px); font-weight: 600; }
+.sc-actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; }
+.sc-actions .chip, .breakdown .chip { font-size: 1.05rem; padding: 8px 16px; }
+.voice-warning { margin: 10px 0 0; color: #e8590c; font-size: 0.9rem; }
+
+.breakdown { margin-top: 16px; }
+.breakdown[hidden] { display: none; }
+.places { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; }
+
+.place {
+  --c: #1c7ed6;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  min-width: 120px;
+  max-width: 260px;
+  padding: 10px 12px 12px;
+  border: 3px solid var(--c);
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--c) 10%, var(--bg));
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+.place-name { color: var(--c); font-weight: 700; font-size: 1.05rem; }
+.place-digit { color: var(--c); font: 800 54px/1 var(--font); }
+.blocks { display: flex; flex-wrap: wrap; justify-content: center; align-items: flex-end; gap: 4px; min-height: 24px; }
+.blocks svg { display: block; }
+.place-value { font: 700 1.4rem var(--font); }
+.place-words { color: var(--muted); }
+
+.equation-box { margin: 14px auto 10px; padding: 6px 12px; border-radius: 12px; transition: background-color 0.2s; }
+.equation { margin: 0; font: 800 clamp(26px, 6vw, 40px) / 1.2 var(--font); }
+.equation .op { margin: 0 0.3em; color: var(--muted); }
+.equation-words { margin: 2px 0 0; color: var(--muted); font-size: 1.05rem; }
+
+/* highlighted while being read aloud */
+.big-number.active, .equation-box.active { background: color-mix(in srgb, var(--accent) 18%, transparent); transform: scale(1.04); }
+.place.active { transform: translateY(-4px) scale(1.05); box-shadow: 0 6px 18px color-mix(in srgb, var(--c) 45%, transparent); }
+.big-number .digit.active { text-decoration: underline 6px; text-underline-offset: 8px; }
+
+/* ---- learning: number game (src/learn/numbergame.js) ---- */
+
+dialog.numbers { width: min(820px, calc(100vw - 24px)); padding: 14px 18px 20px; }
+.ng-header { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
+.ng-modes { flex: 1; }
+.ng-stars { font-size: 28px; color: #f59f00; letter-spacing: 2px; }
+.ng-close { border: 0; background: none; font-size: 22px; cursor: pointer; padding: 4px 8px; }
+
+.ng-play { text-align: center; }
+.ng-play[hidden], .ng-done[hidden] { display: none; }
+.ng-question { display: flex; justify-content: center; align-items: center; gap: 10px; margin-top: 10px; }
+.ng-prompt { margin: 0; font: 800 clamp(26px, 5vw, 38px) var(--font); }
+.ng-equation { margin: 4px 0 0; font: 800 clamp(34px, 7vw, 54px) var(--font); color: var(--accent); }
+.ng-equation[hidden] { display: none; }
+
+.ng-scene {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 14px;
+  margin: 14px 0 4px;
+  padding: 14px;
+  border-radius: 16px;
+  background: color-mix(in srgb, var(--fg) 5%, transparent);
+  min-height: 120px;
+}
+.ng-group { display: flex; flex-wrap: wrap; justify-content: center; align-items: flex-end; gap: 10px; max-width: 100%; }
+.ng-op { font: 800 48px var(--font); color: var(--muted); }
+.ng-item {
+  position: relative;
+  padding: 6px;
+  border: 2px solid transparent;
+  border-radius: 12px;
+  background: none;
+  cursor: pointer;
+  transition: transform 0.15s;
+}
+.ng-item:hover { transform: translateY(-3px); }
+.ng-item img { display: block; image-rendering: pixelated; }
+.ng-item[data-n] { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 12%, transparent); }
+.ng-badge {
+  position: absolute;
+  top: -10px;
+  right: -10px;
+  min-width: 30px;
+  height: 30px;
+  padding: 0 6px;
+  border-radius: 999px;
+  background: var(--accent);
+  color: var(--bg);
+  font: 800 18px/30px var(--font);
+  animation: pop 0.25s ease-out;
+}
+.ng-hint { margin: 4px 0 12px; color: var(--muted); }
+
+.ng-options { display: flex; justify-content: center; gap: 16px; flex-wrap: wrap; }
+.ng-option {
+  min-width: 96px;
+  height: 96px;
+  border: 3px solid var(--line);
+  border-radius: 20px;
+  background: var(--chip);
+  font: 800 52px var(--font);
+  cursor: pointer;
+  transition: transform 0.15s, background-color 0.2s;
+}
+.ng-option:hover { transform: scale(1.06); border-color: var(--accent); }
+.ng-option.right { background: #2f9e44; border-color: #2f9e44; color: #fff; animation: pop 0.35s ease-out; }
+.ng-option.wrong { animation: shake 0.4s; border-color: #e03131; }
+
+.ng-done { text-align: center; padding: 20px 0; }
+.ng-done-stars { margin: 0 0 16px; font-size: clamp(40px, 10vw, 72px); animation: pop 0.5s ease-out; }
+.ng-done menu { justify-content: center; }
+.ng-done menu button { font-size: 1.1rem; padding: 10px 18px; }
+
+@keyframes pop { 0% { transform: scale(0.6); } 70% { transform: scale(1.12); } 100% { transform: scale(1); } }
+@keyframes shake { 0%, 100% { transform: translateX(0); } 20%, 60% { transform: translateX(-8px); } 40%, 80% { transform: translateX(8px); } }
+
+@media (prefers-reduced-motion: reduce) {
+  * { animation: none !important; transition: none !important; }
+}

@@ -19,10 +19,11 @@ export function textWidth(text, px = 2) {
   return text.length * 4 * px - px;
 }
 
+/** @param {string|string[]} color one color, or one per character */
 export function drawPixelText(ctx, text, x, y, color, px = 2) {
-  ctx.fillStyle = color;
   let cx = x;
-  for (const ch of text) {
+  for (const [i, ch] of [...text].entries()) {
+    ctx.fillStyle = Array.isArray(color) ? color[i] : color;
     const g = GLYPHS[ch];
     if (g) {
       for (let r = 0; r < 5; r++) {

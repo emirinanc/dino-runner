@@ -12,7 +12,7 @@
   <header class="topbar">
     <h1 class="brand">🦖 <span data-i18n="title">Dino Runner</span></h1>
     <nav class="toolbar" aria-label="Game options">
-      <button type="button" id="btn-nickname">👤 <span id="nickname-label">Nickname</span></button>
+      <button type="button" id="btn-numbers">🎲 <span data-i18n="numberGame">Number game</span></button>
       <button type="button" id="btn-sound"><span id="sound-icon">🔊</span> <span data-i18n="sound">Sound</span></button>
       <button type="button" id="btn-zoom">🔍 <span id="zoom-label">1x</span></button>
       <button type="button" id="btn-screenshot">📸 <span data-i18n="screenshot">Screenshot</span></button>
@@ -20,6 +20,7 @@
       <button type="button" id="btn-embed">&lt;/&gt; <span data-i18n="embed">Embed</span></button>
       <select id="lang" aria-label="Language">
         <option value="en">English</option>
+        <option value="tr">Türkçe</option>
         <option value="pt-BR">Português (Brasil)</option>
         <option value="ja">日本語</option>
         <option value="es">Español</option>
@@ -45,6 +46,27 @@
     <p class="controls" data-i18n="controls">Press Space or tap to jump · press ↓ or hold the bottom to duck</p>
   </main>
 
+  <!-- Score card: shown at game over / pause. See src/learn/scorecard.js -->
+  <section id="score-card" class="score-card" hidden>
+    <p class="score-label" data-i18n="yourScore">Your score</p>
+    <div class="big-number" aria-live="polite"></div>
+    <p class="number-words"></p>
+    <div class="sc-actions">
+      <button type="button" class="chip" data-action="read">🔊 <span data-i18n="readAloud">Read aloud</span></button>
+      <button type="button" class="chip" data-action="breakdown">🧩 <span data-i18n="breakdown">Break it down</span></button>
+      <button type="button" class="chip" data-action="numbers">🎲 <span data-i18n="numberGame">Number game</span></button>
+    </div>
+    <p class="voice-warning" hidden></p>
+    <div class="breakdown" hidden>
+      <div class="places"></div>
+      <div class="equation-box">
+        <p class="equation"></p>
+        <p class="equation-words"></p>
+      </div>
+      <button type="button" class="chip" data-action="explain">🔊 <span data-i18n="explain">Explain</span></button>
+    </div>
+  </section>
+
   <section class="panel">
     <h2 data-i18n="versions">Versions</h2>
     <div class="chips" id="themes"></div>
@@ -62,33 +84,38 @@
     </div>
   </section>
 
-  <section class="panel boards">
-    <div>
-      <h2 data-i18n="todayTop">5 highest scores of the day</h2>
-      <ol id="board-today"></ol>
-    </div>
-    <div>
-      <h2 data-i18n="allTimeTop">Top 5 of all time</h2>
-      <ol id="board-all"></ol>
-    </div>
-    <p class="best"><span data-i18n="personalBest">Your best</span>: <b id="personal-best">0</b>
-      <button type="button" class="link" id="btn-clear-scores" data-i18n="clearScores">Clear scores</button></p>
-  </section>
-
   <footer class="panel footer">
     <p data-i18n="tagline">The endless dino runner — no ads, fully customizable.</p>
   </footer>
 
-  <!-- Nickname -->
-  <dialog id="dlg-nickname">
-    <form method="dialog">
-      <label for="nickname-input" data-i18n="nicknamePrompt">Your nickname for the leaderboard</label>
-      <input id="nickname-input" name="nickname" maxlength="20" autocomplete="nickname">
+  <!-- Number game: counting and addition. See src/learn/numbergame.js -->
+  <dialog id="dlg-numbers" class="numbers">
+    <header class="ng-header">
+      <div class="chips ng-modes">
+        <button type="button" class="chip" data-mode="count">🔢 <span data-i18n="modeCount">Counting</span></button>
+        <button type="button" class="chip" data-mode="add">➕ <span data-i18n="modeAdd">Addition</span></button>
+        <button type="button" class="chip" data-mode="mix">🎲 <span data-i18n="modeMix">Mixed</span></button>
+      </div>
+      <span class="ng-stars" aria-label="stars"></span>
+      <button type="button" class="ng-close" data-action="close" aria-label="Close">✕</button>
+    </header>
+    <div class="ng-play">
+      <div class="ng-question">
+        <p class="ng-prompt"></p>
+        <button type="button" class="chip" data-action="repeat" aria-label="Repeat">🔊</button>
+      </div>
+      <p class="ng-equation" hidden></p>
+      <div class="ng-scene"></div>
+      <p class="ng-hint" data-i18n="tapToCount">Tap the pictures to count them</p>
+      <div class="ng-options"></div>
+    </div>
+    <div class="ng-done" hidden>
+      <p class="ng-done-stars"></p>
       <menu>
-        <button value="cancel" data-i18n="cancel">Cancel</button>
-        <button value="save" class="primary" data-i18n="save">Save</button>
+        <button type="button" data-action="again" class="primary">🔁 <span data-i18n="playAgain">Play again</span></button>
+        <button type="button" data-action="close-done">🦖 <span data-i18n="backToGame">Back to the game</span></button>
       </menu>
-    </form>
+    </div>
   </dialog>
 
   <!-- Embed -->
@@ -156,7 +183,24 @@
         <label class="row"><span data-i18n="speed">Speed</span>
           <input type="range" name="speed" min="0.5" max="2" step="0.25"> <output id="speed-value">1×</output></label>
         <label class="row"><input type="checkbox" name="invincible"> <span data-i18n="invincible">Invincible (practice)</span></label>
-        <p class="note" data-i18n="cheatNote">Scores are not saved while invincible or at a speed other than 1×.</p>
+        <p class="note" data-i18n="cheatNote">The high score is not updated while invincible or at a speed other than 1×.</p>
+      </fieldset>
+
+      <fieldset>
+        <legend data-i18n="learning">Learning</legend>
+        <label class="row"><span data-i18n="learnLang">Language for numbers</span>
+          <select name="learnLang">
+            <option value="tr">Türkçe</option>
+            <option value="en">English</option>
+          </select></label>
+        <label class="row"><input type="checkbox" name="learnSpeak"> <span data-i18n="learnSpeak">Read numbers aloud</span></label>
+        <label class="row"><input type="checkbox" name="learnColors"> <span data-i18n="learnColors">Color digits by place value</span></label>
+        <label class="row"><span data-i18n="learnMax">Number game goes up to</span>
+          <select name="learnMax">
+            <option value="5">5</option>
+            <option value="10">10</option>
+            <option value="20">20</option>
+          </select></label>
       </fieldset>
 
       <menu>

@@ -61,6 +61,13 @@ export function bindInput(game, playArea) {
   playArea.addEventListener('pointercancel', end);
   playArea.addEventListener('contextmenu', (e) => e.preventDefault());
 
+  // After a mouse/touch click on a button, drop its focus so Space jumps
+  // instead of pressing that button again.
+  document.addEventListener('click', (e) => {
+    const btn = e.target instanceof Element && e.target.closest('button');
+    if (btn && e.detail > 0 && !btn.closest('dialog')) btn.blur();
+  });
+
   // Pause when the tab is hidden or the window loses focus.
   document.addEventListener('visibilitychange', () => document.hidden && game.pause());
   window.addEventListener('blur', () => game.pause());

@@ -23,10 +23,11 @@ To deploy, copy the folder to any static host (GitHub Pages, Netlify, Cloudflare
 |---|---|
 | **Controls** | Space / ↑ / W to jump (hold to jump higher) · ↓ / S to duck or fall faster · P / Esc to pause · Enter to restart. On touch screens, tap to jump and hold the bottom of the play area to duck. |
 | **Versions** | Classic (with an automatic day/night cycle), Night, Color, Hero (cape and mask, city skyline), Jester, Dina (with a bow), Halloween (ghost dino, pumpkins, tombstones, bats). In October a banner suggests the Halloween version. |
-| **Toolbar** | Nickname · Sound on/off · Zoom (1×, 1.5×, 2×, 3×) · Screenshot (downloads a PNG) · Customize · Embed code · Language (English, Português (Brasil), 日本語, Español) |
-| **Scores** | High score, top 5 of the day and top 5 of all time, stored locally in your browser. The score flashes and beeps every 100 points. |
+| **Toolbar** | Number game · Sound on/off · Zoom (1×, 1.5×, 2×, 3×) · Screenshot (downloads a PNG) · Customize · Embed code · Language (English, Türkçe, Português (Brasil), 日本語, Español) |
+| **Score** | Score digits are colored by place value. The high score is shown as HI. The score flashes and beeps every 100 points, and the number is spoken aloud ("yüz!", "iki yüz!"). |
+| **Learning numbers** | When a run ends or you pause, a **score card** shows the score as a big number with its words ("387 → üç yüz seksen yedi") and reads it aloud. **🧩 Parçalara ayır / Break it down** splits it into place values (3 yüzlük · 8 onluk · 7 birlik) with base-ten blocks and "300 + 80 + 7 = 387", and narrates each step; tap any column to hear that part. **🎲 Sayı oyunu / Number game** is a side game of counting and addition with pictures from the current theme. Tapping a picture counts it aloud, there are 5 stars per round, and the first questions use the digits of the last score. Numbers are in Turkish by default (English also available). |
 | **Share** | Native share sheet (on mobile), X, Facebook, WhatsApp, Telegram, copy link |
-| **Customize** | Theme · background (theme default, solid color, or an uploaded image with cover/tile/stretch, parallax scroll and opacity) · dino, obstacle and ground colors · day/night cycle · speed multiplier · invincible practice mode |
+| **Customize** | Theme · background (theme default, solid color, or an uploaded image with cover/tile/stretch, parallax scroll and opacity) · dino, obstacle and ground colors · day/night cycle · speed multiplier · invincible practice mode · learning: number language, read aloud, colored digits, number game limit (5 / 10 / 20) |
 
 URL options: `?theme=night`, `?embed=1` (game only, for iframes), `?bot=1` (autopilot).
 
@@ -51,9 +52,14 @@ src/
   ui.js               toolbar, overlay, dialogs, leaderboards, share, screenshot
   input.js            keyboard / mouse / touch
   audio.js            synthesized sound effects (Web Audio)
-  storage.js          settings + scores in localStorage
+  storage.js          settings + high score in localStorage
   i18n.js             UI translations
   bot.js              autopilot (?bot=1)
+  learn/
+    numbers.js        number words (Turkish, English), place values, spoken phrases
+    speech.js         text-to-speech (Web Speech API)
+    scorecard.js      score card: big number, words, read aloud, place-value breakdown
+    numbergame.js     counting & addition side game
 tools/gallery.html    preview every sprite in every theme
 ```
 
@@ -111,10 +117,18 @@ Change jump strength, gravity, speeds, obstacle gaps, scoring and the night cycl
 
 Add a block to `STRINGS` in `src/i18n.js`, then add a matching `<option>` to the language `<select>` in `index.html`.
 
+To make numbers readable and speakable in a new language, add an entry to `LEARN_LANGS` in `src/learn/numbers.js`. It needs a `words(n)` function, the place names and the spoken phrases. Then add it to the "Language for numbers" `<select>` in `index.html`.
+
+### Changing the learning features
+
+- **Place-value colors:** `PLACE_COLORS` in `src/learn/numbers.js`. They're used on the canvas, the score card and the blocks.
+- **What's said aloud:** the phrases in `LEARN_LANGS`. The breakdown narration is built in `breakdownScript()`.
+- **Number game:** round length, how questions are generated (`makeQuestions`) and the answer choices (`options`) are in `src/learn/numbergame.js`.
+
 ## Notes
 
-- Leaderboards and the high score are stored only in your browser's localStorage. A shared, global leaderboard or "playing now" counter would need a small backend; `recordScore()` / `topScores()` in `src/storage.js` are the place to connect one.
-- Scores aren't recorded while invincible or when the speed multiplier isn't 1×.
+- The high score is stored only in your browser's localStorage, and isn't updated while invincible or when the speed multiplier isn't 1×.
+- Speech uses the voices installed on the device. On macOS, Chrome and Safari include a Turkish voice (Yelda). If no voice is found for the chosen number language, the score card says so.
 - Uploaded background images are downscaled and saved with your settings. A very large image may not fit in localStorage, and the game will tell you if that happens.
 
 ## License

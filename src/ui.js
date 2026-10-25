@@ -1,10 +1,15 @@
 // Everything around the canvas: toolbar, overlay messages, theme picker,
-// leaderboards, sharing and the Customize / Nickname / Embed dialogs.
+// score card, number game, sharing and the Customize / Embed dialogs.
 
 import { CONFIG } from './config.js';
 import { THEMES } from './themes.js';
+import { OBSTACLE_TYPES } from './entities/obstacles.js';
 import { t, setLanguage } from './i18n.js';
-import { DEFAULT_SETTINGS, saveSettings, saveHighScore, recordScore, topScores, clearScores } from './storage.js';
+import { DEFAULT_SETTINGS, saveSettings, saveHighScore } from './storage.js';
+import { Speech } from './learn/speech.js';
+import { ScoreCard } from './learn/scorecard.js';
+import { NumberGame } from './learn/numbergame.js';
+import { learnLang } from './learn/numbers.js';
 
 const ZOOMS = [1, 1.5, 2, 3];
 const $ = (id) => document.getElementById(id);
@@ -15,19 +20,22 @@ export class UI {
     this.game = game;
     this.settings = settings;
     this.sound = sound;
+    this.speech = new Speech();
+    this.lastScore = 0;
   }
 
   init() {
     this.buildThemeButtons();
     this.bindToolbar();
     this.bindCustomize();
-    this.bindNickname();
     this.bindEmbed();
     this.bindShare();
     this.bindHalloween();
+    this.bindLearning();
 
-    this.game.addEventListener('statechange', () => this.updateOverlay());
+    this.game.addEventListener('statechange', (e) => this.onStateChange(e.detail.state));
     this.game.addEventListener('gameover', (e) => this.onGameOver(e.detail));
+    this.game.addEventListener('milestone', (e) => this.onMilestone(e.detail.score));
     this.game.addEventListener('palette', (e) => this.applyPageColors(e.detail));
 
     window.addEventListener('resize', () => this.fit());
@@ -40,14 +48,13 @@ export class UI {
     $('lang').value = this.settings.lang;
     $('sound-icon').textContent = this.settings.sound ? '🔊' : '🔇';
     $('zoom-label').textContent = `${this.settings.zoom}x`;
-    $('nickname-label').textContent = this.settings.nickname || t('nickname');
     for (const btn of document.querySelectorAll('[data-theme-id]')) {
       btn.setAttribute('aria-pressed', String(btn.dataset.themeId === this.settings.theme));
     }
     this.fit();
     this.updateOverlay();
-    this.renderBoards();
     this.updateHalloween();
+    this.scoreCard?.refresh();
   }
 
   save() {
@@ -89,6 +96,12 @@ export class UI {
     }[state] ?? '';
   }
 
+  onStateChange(state) {
+    this.updateOverlay();
+    if (state === 'paused') this.scoreCard.show(this.game.score);
+    else if (state !== 'over') this.scoreCard.hide();
+  }
+
   // --- toolbar ----------------------------------------------------------------
 
   bindToolbar() {
@@ -114,24 +127,6 @@ export class UI {
       this.save();
       this.refresh();
     });
-
-    $('btn-clear-scores').addEventListener('click', (e) => {
-      const btn = e.currentTarget;
-      if (btn.dataset.confirm !== '1') {
-        btn.dataset.confirm = '1';
-        btn.textContent = `${t('clearScores')}?`;
-        setTimeout(() => {
-          btn.dataset.confirm = '';
-          btn.textContent = t('clearScores');
-        }, 3000);
-        return;
-      }
-      clearScores();
-      this.game.highScore = 0;
-      btn.dataset.confirm = '';
-      btn.textContent = t('clearScores');
-      this.renderBoards();
-    });
   }
 
   buildThemeButtons() {
@@ -154,7 +149,6 @@ export class UI {
     url.searchParams.set('theme', id);
     history.replaceState(null, '', url);
     this.refresh();
-    document.activeElement?.blur(); // so Space jumps instead of re-clicking the button
   }
 
   screenshot() {
@@ -180,44 +174,53 @@ export class UI {
     });
   }
 
-  // --- scores & sharing -------------------------------------------------------
+  // --- scores & learning ------------------------------------------------------
 
   onGameOver({ score, highScore, recorded }) {
     this.lastRun = { score, recorded };
-    if (recorded) {
-      recordScore(this.settings.nickname, score);
-      saveHighScore(highScore);
-    }
-    this.renderBoards();
+    this.lastScore = score;
+    if (recorded) saveHighScore(highScore);
     this.updateShare(score);
     this.updateOverlay();
+    this.scoreCard.show(score, { speak: this.settings.learning.speak });
   }
 
-  renderBoards() {
-    const { today, allTime } = topScores(5);
-    const fill = (ol, list) => {
-      ol.replaceChildren();
-      if (!list.length) {
-        const li = document.createElement('li');
-        li.className = 'empty';
-        li.textContent = t('noScores');
-        ol.append(li);
-        return;
-      }
-      for (const s of list) {
-        const li = document.createElement('li');
-        const name = document.createElement('span');
-        name.textContent = s.name;
-        const score = document.createElement('b');
-        score.textContent = s.score;
-        li.append(name, score);
-        ol.append(li);
-      }
-    };
-    fill($('board-today'), today);
-    fill($('board-all'), allTime);
-    $('personal-best').textContent = this.game.highScore;
+  onMilestone(score) {
+    if (this.settings.learning.speak) {
+      this.speech.say(learnLang(this.settings.learning.lang).words(score), this.settings.learning.lang, { rate: 1 });
+    }
   }
+
+  bindLearning() {
+    this.scoreCard = new ScoreCard($('score-card'), { speech: this.speech, settings: this.settings, t });
+    this.numberGame = new NumberGame($('dlg-numbers'), {
+      speech: this.speech,
+      settings: this.settings,
+      t,
+      sprites: () => this.countingSprites(),
+    });
+
+    const openGame = (seed) => {
+      this.game.pause();
+      this.speech.cancel();
+      this.numberGame.open(seed);
+    };
+    $('btn-numbers').addEventListener('click', () => openGame(this.lastScore));
+    $('score-card').querySelector('[data-action=numbers]').addEventListener('click', () => openGame(this.scoreCard.score));
+  }
+
+  /** Pictures for the number game, taken from the current theme's sprites. */
+  countingSprites() {
+    const { bank, palette } = this.game;
+    bank.use(palette);
+    const names = [...palette.obstacles.ground, ...palette.obstacles.air]
+      .map((id) => OBSTACLE_TYPES[id]?.frames[0])
+      .filter(Boolean);
+    const sprites = [bank.dino('stand'), ...names.map((n) => bank.get(n))];
+    return sprites.map((s) => ({ src: s.canvas.toDataURL(), w: s.canvas.width, h: s.canvas.height }));
+  }
+
+  // --- sharing ----------------------------------------------------------------
 
   shareUrl() {
     if (CONFIG.shareUrl) return CONFIG.shareUrl;
@@ -264,21 +267,6 @@ export class UI {
     dlg.showModal();
   }
 
-  bindNickname() {
-    const dlg = $('dlg-nickname');
-    const input = $('nickname-input');
-    $('btn-nickname').addEventListener('click', () => {
-      input.value = this.settings.nickname;
-      this.openDialog(dlg);
-    });
-    dlg.querySelector('form').addEventListener('submit', (e) => {
-      if (e.submitter?.value !== 'save') return;
-      this.settings.nickname = input.value.trim().slice(0, 20);
-      this.save();
-      this.refresh();
-    });
-  }
-
   bindEmbed() {
     const dlg = $('dlg-embed');
     $('btn-embed').addEventListener('click', () => {
@@ -318,6 +306,10 @@ export class UI {
       f.dayNightCycle.checked = s.dayNightCycle;
       f.speed.value = s.speed;
       f.invincible.checked = s.invincible;
+      f.learnLang.value = s.learning.lang;
+      f.learnSpeak.checked = s.learning.speak;
+      f.learnColors.checked = s.learning.coloredDigits;
+      f.learnMax.value = String(s.learning.maxNumber);
       syncLabels();
     };
 
@@ -340,6 +332,12 @@ export class UI {
       s.dayNightCycle = f.dayNightCycle.checked;
       s.speed = Number(f.speed.value);
       s.invincible = f.invincible.checked;
+      Object.assign(s.learning, {
+        lang: f.learnLang.value,
+        speak: f.learnSpeak.checked,
+        coloredDigits: f.learnColors.checked,
+        maxNumber: Number(f.learnMax.value),
+      });
       syncLabels();
       this.save();
       this.refresh();
@@ -370,6 +368,7 @@ export class UI {
         speed: DEFAULT_SETTINGS.speed,
         invincible: DEFAULT_SETTINGS.invincible,
         custom: structuredClone(DEFAULT_SETTINGS.custom),
+        learning: structuredClone(DEFAULT_SETTINGS.learning),
       });
       this.save();
       load();

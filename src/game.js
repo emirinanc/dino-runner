@@ -6,6 +6,7 @@ import { SpriteBank, drawSprite, spritesCollide } from './sprites.js';
 import { buildPalette, getTheme } from './themes.js';
 import { drawPixelText, textWidth } from './font.js';
 import { autopilot } from './bot.js';
+import { PLACE_COLORS, PLACES } from './learn/numbers.js';
 
 const FRAME_MS = 1000 / 60;
 const { width: W, height: H, groundY } = CONFIG;
@@ -18,6 +19,7 @@ const { width: W, height: H, groundY } = CONFIG;
  * Events (it's an EventTarget):
  *   statechange  detail: { state }
  *   gameover     detail: { score, highScore, recorded }
+ *   milestone    detail: { score }   (every CONFIG.score.milestone points)
  *   palette      detail: palette     (theme/night colors changed — style the page)
  */
 export class Game extends EventTarget {
@@ -185,6 +187,7 @@ export class Game extends EventTarget {
       this.sound.milestone();
       this.flashScore = Math.floor(after / milestone) * milestone;
       this.flashUntil = now + flashMs * flashes * 2;
+      this.dispatchEvent(new CustomEvent('milestone', { detail: { score: this.flashScore } }));
     }
 
     if (!this.settings.invincible && this.hitsObstacle()) this.crash(now);
@@ -271,6 +274,13 @@ export class Game extends EventTarget {
     this.drawScore(ctx, palette, now);
   }
 
+  /** Colors each digit by place value (ones, tens, …); leading zeros keep the theme color. */
+  digitColors(text, color) {
+    if (!this.settings.learning?.coloredDigits) return color;
+    const lead = text.length - String(Number(text)).length;
+    return [...text].map((_, i) => (i < lead ? color : PLACE_COLORS[PLACES[text.length - 1 - i]] ?? color));
+  }
+
   drawScore(ctx, palette, now) {
     const pad = (n) => String(n).padStart(CONFIG.score.digits, '0');
     const color = palette.colors.text;
@@ -280,7 +290,7 @@ export class Game extends EventTarget {
       shown = blinkOn ? pad(this.flashScore) : '';
     }
     const x = W - 10 - textWidth(pad(this.score));
-    if (shown) drawPixelText(ctx, shown, x, 10, color);
+    if (shown) drawPixelText(ctx, shown, x, 10, this.digitColors(shown, color));
     if (this.highScore > 0) {
       const hi = `HI ${pad(this.highScore)}`;
       ctx.globalAlpha = 0.75;
