@@ -48,6 +48,17 @@ function trWords(n) {
   return parts.join(' ');
 }
 
+/**
+ * "sekiz" → "sekizden", "üç" → "üçten", "altı" → "altıdan": the ablative ("from")
+ * suffix follows the word's last vowel and hardens after a voiceless consonant.
+ */
+function trFrom(word) {
+  const vowels = word.match(/[aıoueiöü]/g) ?? ['e'];
+  const back = 'aıou'.includes(vowels[vowels.length - 1]);
+  const hard = 'çfhkpsşt'.includes(word[word.length - 1]);
+  return `${word}${hard ? 't' : 'd'}${back ? 'a' : 'e'}n`;
+}
+
 // --- English ------------------------------------------------------------------
 
 const EN_SMALL = ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten',
@@ -97,8 +108,15 @@ export const LEARN_LANGS = {
     addQuestion: (a, b) => `${a} artı ${b}, kaç eder?`,
     addResult: (a, b, sum) => `${a} artı ${b}, ${sum} eder!`,
     praise: ['Aferin!', 'Harika!', 'Çok güzel!', 'Süpersin!', 'Bravo!'],
-    tryAgain: 'Tekrar dene.',
-    thisIs: (w) => `Bu ${w}.`,
+    // wrong answer → count together
+    notThis: (w) => `${w} değil.`,
+    countTogether: 'Hadi birlikte sayalım!',
+    soHowMany: 'Peki, kaç tane?',
+    // how an addition question relates to the one before it
+    relation: { swap: 'Yerlerini değiştirdik.', less: 'Bir tane gitti.', more: 'Bir tane daha geldi.' },
+    swapResult: (a, b, sum) => `Aynı! ${a} artı ${b}, ${sum} eder! ${b} artı ${a}, yine ${sum}.`,
+    lessResult: (prev) => `${trFrom(prev)} bir eksik!`,
+    moreResult: (prev) => `${trFrom(prev)} bir fazla!`,
     roundDone: (w) => `Harika! ${w} yıldız kazandın!`,
   },
   en: {
@@ -118,8 +136,13 @@ export const LEARN_LANGS = {
     addQuestion: (a, b) => `What is ${a} plus ${b}?`,
     addResult: (a, b, sum) => `${a} plus ${b} is ${sum}!`,
     praise: ['Well done!', 'Great job!', 'Awesome!', 'You got it!'],
-    tryAgain: 'Try again.',
-    thisIs: (w) => `That is ${w}.`,
+    notThis: (w) => `Not ${w}.`,
+    countTogether: "Let's count together!",
+    soHowMany: 'So, how many?',
+    relation: { swap: 'We swapped them.', less: 'One went away.', more: 'One more came.' },
+    swapResult: (a, b, sum) => `The same! ${a} plus ${b} is ${sum}, and ${b} plus ${a} is ${sum} too.`,
+    lessResult: (prev) => `One less than ${prev}!`,
+    moreResult: (prev) => `One more than ${prev}!`,
     roundDone: (w) => `Great! You earned ${w} stars!`,
   },
 };

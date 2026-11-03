@@ -342,6 +342,54 @@ dialog.numbers { width: min(820px, calc(100vw - 24px)); padding: 14px 18px 20px;
 }
 .ng-hint { margin: 4px 0 12px; color: var(--muted); }
 
+/* addition: each group has its own color, kept when the groups swap */
+.ng-group[data-id] {
+  padding: 8px;
+  border: 3px solid color-mix(in srgb, var(--g) 55%, transparent);
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--g) 10%, transparent);
+}
+.ng-equation .op { margin: 0 0.15em; color: var(--muted); }
+.ng-equation .term { display: inline-block; }
+.ng-equation .term.changed { animation: nudge 0.6s ease-in-out 2; }
+
+/* the item that went away stays as a faded outline; a new one arrives with a pop */
+.ng-item.ghost {
+  opacity: 0.3;
+  border: 2px dashed var(--muted);
+  cursor: default;
+  animation: leave 0.9s ease-in 0.5s both;
+}
+.ng-item.ghost:hover { transform: none; }
+.ng-item.fresh:not([data-n]) {
+  border: 2px dashed var(--g, var(--accent));
+  animation: arrive 0.7s ease-out 0.4s both;
+}
+.ng-item.counting { transform: translateY(-6px) scale(1.12); }
+
+/* solved additions of the chain: 1 + 7 = 8 ⇄ 7 + 1 = 8 −1 … */
+.ng-history {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 6px 8px;
+  margin-top: 8px;
+  font: 800 clamp(16px, 3.4vw, 22px) var(--font);
+}
+.ng-past {
+  display: inline-flex;
+  gap: 0.2em;
+  padding: 2px 10px;
+  border: 2px solid var(--line);
+  border-radius: 10px;
+  background: var(--chip);
+}
+.ng-past .op { color: var(--muted); }
+.ng-past.prev { border-color: var(--accent); }
+.ng-rel { color: var(--muted); }
+.ng-rel.next { color: var(--accent); }
+
 .ng-options { display: flex; justify-content: center; gap: 16px; flex-wrap: wrap; }
 .ng-option {
   min-width: 96px;
@@ -356,6 +404,7 @@ dialog.numbers { width: min(820px, calc(100vw - 24px)); padding: 14px 18px 20px;
 .ng-option:hover { transform: scale(1.06); border-color: var(--accent); }
 .ng-option.right { background: #2f9e44; border-color: #2f9e44; color: #fff; animation: pop 0.35s ease-out; }
 .ng-option.wrong { animation: shake 0.4s; border-color: #e03131; }
+.ng-option:disabled { opacity: 0.45; cursor: default; transform: none; }
 
 .ng-done { text-align: center; padding: 20px 0; }
 .ng-done-stars { margin: 0 0 16px; font-size: clamp(40px, 10vw, 72px); animation: pop 0.5s ease-out; }
@@ -372,6 +421,9 @@ dialog.numbers { width: min(820px, calc(100vw - 24px)); padding: 14px 18px 20px;
 @media (pointer: coarse) { .ng-done kbd { display: none; } }
 
 @keyframes pop { 0% { transform: scale(0.6); } 70% { transform: scale(1.12); } 100% { transform: scale(1); } }
+@keyframes nudge { 50% { transform: scale(1.3); } }
+@keyframes leave { from { opacity: 1; transform: none; } to { opacity: 0.3; transform: translateY(-10px) scale(0.85); } }
+@keyframes arrive { from { opacity: 0; transform: translateY(-30px) scale(0.4); } }
 @keyframes shake { 0%, 100% { transform: translateX(0); } 20%, 60% { transform: translateX(-8px); } 40%, 80% { transform: translateX(8px); } }
 
 @media (prefers-reduced-motion: reduce) {
