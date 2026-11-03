@@ -25,7 +25,7 @@ To deploy, copy the folder to any static host (GitHub Pages, Netlify, Cloudflare
 | **Versions** | Classic (with an automatic day/night cycle), Night, Color, Hero (cape and mask, city skyline), Jester, Dina (with a bow), Halloween (ghost dino, pumpkins, tombstones, bats). In October a banner suggests the Halloween version. |
 | **Toolbar** | Number game · Sound on/off · Zoom (1×, 1.5×, 2×, 3×) · Screenshot (downloads a PNG) · Customize · Embed code · Language (English, Türkçe, Português (Brasil), 日本語, Español) |
 | **Score** | Score digits are colored by place value. The high score is shown as HI. The score flashes and beeps every 100 points, and the number is spoken aloud ("yüz!", "iki yüz!"). |
-| **Learning numbers** | When a run ends or you pause, a **score card** shows the score as a big number with its words ("387 → üç yüz seksen yedi") and reads it aloud. **🧩 Parçalara ayır / Break it down** splits it into place values (3 yüzlük · 8 onluk · 7 birlik) with base-ten blocks and "300 + 80 + 7 = 387", and narrates each step; tap any column to hear that part. **🎲 Sayı oyunu / Number game** is a side game of counting and addition with pictures from the current theme. Tapping a picture counts it aloud, there are 5 stars per round, and the first questions use the digits of the last score. A wrong answer doesn't just say "try again": the buttons lock and the game counts every picture together with the child, then asks again. Addition questions come in chains where each one changes the last in one way, so patterns can be noticed: the groups swap places (1 + 7 → 7 + 1, "Aynı!"), or one picture goes away or arrives (1 + 7 → 1 + 6, "Sekizden bir eksik!"). Solved equations stay in a row above the question. Numbers are in Turkish by default (English also available). Numbers are in Turkish by default (English also available). |
+| **Learning numbers** | When a run ends or you pause, a **score card** shows the score as a big number with its words ("387 → üç yüz seksen yedi") and reads it aloud. **🧩 Parçalara ayır / Break it down** splits it into place values (3 yüzlük · 8 onluk · 7 birlik) with base-ten blocks and "300 + 80 + 7 = 387", and narrates each step; tap any column to hear that part. **🎲 Sayı oyunu / Number game** is a side game of counting and addition with pictures from the current theme. Tapping a picture counts it aloud, there are 5 stars per round, and the first questions use the digits of the last score. A wrong answer doesn't just say "try again": the buttons lock and the game counts every picture together with the child, then asks again. Addition questions come in chains where each one changes the last in one way, so patterns can be noticed: the groups swap places (1 + 7 → 7 + 1, "Aynı!"), or one picture goes away or arrives (1 + 7 → 1 + 6, "Sekizden bir eksik!"). Solved equations stay in a row above the question. Numbers are in Turkish by default (English also available). |
 | **Share** | Native share sheet (on mobile), X, Facebook, WhatsApp, Telegram, copy link |
 | **Customize** | Theme · background (theme default, solid color, or an uploaded image with cover/tile/stretch, parallax scroll and opacity) · dino, obstacle and ground colors · day/night cycle · speed multiplier · invincible practice mode · learning: number language, voice (with a Listen button), read aloud, colored digits, number game limit (5 / 10 / 20) |
 
@@ -57,10 +57,13 @@ src/
   bot.js              autopilot (?bot=1)
   learn/
     numbers.js        number words (Turkish, English), place values, spoken phrases
-    speech.js         text-to-speech (Web Speech API)
+    phrases.js        every sentence the game can say (for the voice clips)
+    speech.js         plays the voice clips, falls back to the browser's voices
     scorecard.js      score card: big number, words, read aloud, place-value breakdown
     numbergame.js     counting & addition side game
+audio/tr/             natural voice clips + manifest.json (generated)
 tools/gallery.html    preview every sprite in every theme
+tools/voice/          generate.mjs: makes the voice clips with Google Cloud TTS
 ```
 
 ## Customizing
@@ -119,6 +122,17 @@ Add a block to `STRINGS` in `src/i18n.js`, then add a matching `<option>` to the
 
 To make numbers readable and speakable in a new language, add an entry to `LEARN_LANGS` in `src/learn/numbers.js`. It needs a `words(n)` function, the place names and the spoken phrases. Then add it to the "Language for numbers" `<select>` in `index.html`.
 
+### Voice clips
+
+`src/learn/phrases.js` lists every sentence the game can say. After adding or changing a phrase, generate the missing clips:
+
+```sh
+node tools/voice/generate.mjs tr --dry     # count sentences and characters
+node tools/voice/generate.mjs tr --prune   # generate new clips, delete unused ones
+```
+
+This calls Google Cloud Text-to-Speech with the API key in `~/.config/dino-runner/google-tts-key` (create a key restricted to the Text-to-Speech API; never commit it). Only new sentences are sent, and the voice and speed are set in `VOICES` at the top of the script.
+
 ### Changing the learning features
 
 - **Place-value colors:** `PLACE_COLORS` in `src/learn/numbers.js`. They're used on the canvas, the score card and the blocks.
@@ -128,8 +142,8 @@ To make numbers readable and speakable in a new language, add an entry to `LEARN
 ## Notes
 
 - The high score is stored only in your browser's localStorage, and isn't updated while invincible or when the speed multiplier isn't 1×.
-- Speech uses the voices installed on the device. On macOS, Chrome and Safari include a Turkish voice (Yelda). If no voice is found for the chosen number language, the score card says so.
-- How natural it sounds depends mostly on the voice. The game picks the best one it finds ("Natural", "Enhanced", "Premium" voices first), and you can choose another in Customize → Learning → Voice. To get better voices on Mac, iPhone and iPad, go to Settings → Accessibility → Spoken Content → System Voice → Manage Voices (for Turkish, e.g. Cem). Microsoft Edge includes natural online voices (Turkish: Emel, Ahmet).
+- Turkish is spoken with **natural voice clips** (Google's "Puck" voice) that ship with the game in `audio/tr/`: every sentence the game can say, for number game sums up to 20 and scores up to 999. They work offline, and no API key is needed to play.
+- Anything without a clip (bigger scores, English) is spoken by the browser's own voice. The game picks the best one it finds ("Natural", "Enhanced", "Premium" voices first), and you can choose another in Customize → Learning → Voice. On Mac, iPhone and iPad more voices are in Settings → Accessibility → Spoken Content → System Voice → Manage Voices. If no voice is found for the chosen number language, the score card says so.
 - Phrases are written as full sentences with punctuation ("Üç yüzlük, yani üç yüz.") because voices take their intonation from it.
 - Uploaded background images are downscaled and saved with your settings. A very large image may not fit in localStorage, and the game will tell you if that happens.
 

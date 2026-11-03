@@ -321,7 +321,8 @@ export class UI {
     const fillVoices = () => {
       const lang = this.settings.learning.lang;
       const select = f.learnVoice;
-      select.replaceChildren(new Option(t('voiceAuto'), ''));
+      const natural = this.speech.clipVoiceName(lang);
+      select.replaceChildren(new Option(natural ? t('voiceNatural', { voice: natural }) : t('voiceAuto'), ''));
       for (const v of this.speech.voicesFor(lang)) {
         select.add(new Option(v.localService ? v.name : `${v.name} ☁︎`, v.voiceURI));
       }

@@ -96,6 +96,10 @@ export class NumberGame {
   open(seed) {
     this.seed = seed;
     this.dialog.showModal(); // before rendering, so animations can measure the layout
+    // what's said all the time: counting, praise, the count-together phrases
+    const L = this.L;
+    const numbers = Array.from({ length: this.max + 2 }, (_, i) => L.words(i + 1));
+    this.speech.prefetch([...numbers, ...L.praise, L.countTogether, L.soHowMany, ...Object.values(L.relation)], this.lang);
     this.newRound();
   }
 
@@ -364,6 +368,7 @@ export class NumberGame {
       text = `${q.relation ? `${L.relation[q.relation]} ` : ''}${L.addQuestion(a, b)}`;
     }
     this.speech.say(text, this.lang);
+    this.speech.prefetch([this.praise(q)], this.lang); // the answer, so it plays right away
   }
 
   // --- answering --------------------------------------------------------------

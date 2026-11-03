@@ -29,7 +29,7 @@ export const DEFAULT_SETTINGS = {
     speak: true, // read the score aloud at game over and at every 100 points
     coloredDigits: true, // color score digits by place value (ones, tens, hundreds…)
     maxNumber: 10, // biggest number in the counting / addition game
-    voices: {}, // chosen voice per number language: { tr: voiceURI }; missing = best available
+    voices: {}, // chosen browser voice per number language: { tr: voiceURI }; missing = natural voice clips, else the best browser voice
   },
 };
 
