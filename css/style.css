@@ -1,3 +1,8 @@
+/* `hidden` must win over display rules like `.banner { display: flex }`. */
+[hidden] {
+  display: none !important;
+}
+
 /* Page colors come from the active theme (theme.page in src/themes.js) and are
    set on :root at runtime as --bg / --fg / --accent. */
 :root {
