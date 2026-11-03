@@ -34,3 +34,4 @@ bindInput(game, document.getElementById('play-area'));
 
 // Expose for tinkering from the dev console: game.speed = 20, game.settings.invincible = true …
 window.game = game;
+window.ui = ui;

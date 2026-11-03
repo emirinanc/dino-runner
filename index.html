@@ -46,6 +46,11 @@
     <p class="controls" data-i18n="controls">Press Space or tap to jump · press ↓ or hold the bottom to duck</p>
   </main>
 
+  <section class="panel versions">
+    <h2 data-i18n="versions">Versions</h2>
+    <div class="chips" id="themes"></div>
+  </section>
+
   <!-- Score card: shown at game over / pause. See src/learn/scorecard.js -->
   <section id="score-card" class="score-card" hidden>
     <p class="score-label" data-i18n="yourScore">Your score</p>
@@ -65,11 +70,6 @@
       </div>
       <button type="button" class="chip" data-action="explain">🔊 <span data-i18n="explain">Explain</span></button>
     </div>
-  </section>
-
-  <section class="panel">
-    <h2 data-i18n="versions">Versions</h2>
-    <div class="chips" id="themes"></div>
   </section>
 
   <section class="panel">
@@ -113,7 +113,7 @@
       <p class="ng-done-stars"></p>
       <menu>
         <button type="button" data-action="again" class="primary">🔁 <span data-i18n="playAgain">Play again</span></button>
-        <button type="button" data-action="close-done">🦖 <span data-i18n="backToGame">Back to the game</span></button>
+        <button type="button" data-action="close-done">🦖 <span data-i18n="backToGame">Back to the game</span> <kbd data-i18n="spaceKey">Space</kbd></button>
       </menu>
     </div>
   </dialog>
@@ -193,6 +193,11 @@
             <option value="tr">Türkçe</option>
             <option value="en">English</option>
           </select></label>
+        <div class="row">
+          <label class="row"><span data-i18n="voice">Voice</span> <select name="learnVoice"></select></label>
+          <button type="button" class="chip" id="btn-voice-test">▶ <span data-i18n="voiceTest">Listen</span></button>
+        </div>
+        <p class="note" data-i18n="voiceTip"></p>
         <label class="row"><input type="checkbox" name="learnSpeak"> <span data-i18n="learnSpeak">Read numbers aloud</span></label>
         <label class="row"><input type="checkbox" name="learnColors"> <span data-i18n="learnColors">Color digits by place value</span></label>
         <label class="row"><span data-i18n="learnMax">Number game goes up to</span>

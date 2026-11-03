@@ -88,9 +88,14 @@ export const LEARN_LANGS = {
     },
     plus: 'artı',
     equals: 'eşittir',
+    // Spoken sentences. Commas and full stops matter: voices pause and change
+    // intonation on them, which makes them sound much less robotic.
+    yourScore: (w) => `${w} puan!`,
+    placeStep: (head, value) => `${head}, yani ${value}.`,
     howMany: 'Kaç tane?',
     howManyAll: 'Hepsi kaç tane?',
-    addQuestion: (a, b) => `${a} artı ${b} kaç eder?`,
+    addQuestion: (a, b) => `${a} artı ${b}, kaç eder?`,
+    addResult: (a, b, sum) => `${a} artı ${b}, ${sum} eder!`,
     praise: ['Aferin!', 'Harika!', 'Çok güzel!', 'Süpersin!', 'Bravo!'],
     tryAgain: 'Tekrar dene.',
     thisIs: (w) => `Bu ${w}.`,
@@ -106,9 +111,12 @@ export const LEARN_LANGS = {
     },
     plus: 'plus',
     equals: 'equals',
+    yourScore: (w) => `${w} points!`,
+    placeStep: (head, value) => `${head}, that's ${value}.`,
     howMany: 'How many?',
     howManyAll: 'How many altogether?',
     addQuestion: (a, b) => `What is ${a} plus ${b}?`,
+    addResult: (a, b, sum) => `${a} plus ${b} is ${sum}!`,
     praise: ['Well done!', 'Great job!', 'Awesome!', 'You got it!'],
     tryAgain: 'Try again.',
     thisIs: (w) => `That is ${w}.`,
@@ -125,23 +133,27 @@ export function placeLabel(lang, { digit, place }) {
   return `${digit} ${learnLang(lang).places[place]}`;
 }
 
+/** What's said for one column: "üç yüzlük, yani üç yüz." / "sıfır onluk." */
+export function placeSentence(langId, { digit, place, value }) {
+  const L = learnLang(langId);
+  const head = `${L.words(digit)} ${L.places[place]}`;
+  return digit ? L.placeStep(head, L.words(value)) : `${head}.`;
+}
+
 /**
  * The sentences read out for a breakdown, one per step, e.g. for 347 in Turkish:
- *   "üç yüz kırk yedi" · "üç yüzlük: üç yüz" · "dört onluk: kırk" · "yedi birlik: yedi" ·
- *   "üç yüz artı kırk artı yedi eşittir üç yüz kırk yedi"
+ *   "Üç yüz kırk yedi." · "Üç yüzlük, yani üç yüz." · "Dört onluk, yani kırk." ·
+ *   "Yedi birlik, yani yedi." · "Üç yüz, artı kırk, artı yedi, eşittir üç yüz kırk yedi!"
  */
 export function breakdownScript(n, langId) {
   const L = learnLang(langId);
   const parts = placeValues(n);
-  const steps = [{ text: L.words(n), place: null }];
-  for (const p of parts) {
-    const head = `${L.words(p.digit)} ${L.places[p.place]}`;
-    steps.push({ text: p.digit ? `${head}: ${L.words(p.value)}` : head, place: p.place });
-  }
+  const steps = [{ text: `${L.words(n)}.`, place: null }];
+  for (const p of parts) steps.push({ text: placeSentence(langId, p), place: p.place });
   const nonZero = parts.filter((p) => p.digit);
   if (nonZero.length > 1) {
     const sum = nonZero.map((p) => L.words(p.value)).join(`, ${L.plus} `);
-    steps.push({ text: `${sum}, ${L.equals} ${L.words(n)}`, place: 'all' });
+    steps.push({ text: `${sum}, ${L.equals} ${L.words(n)}!`, place: 'all' });
   }
   return steps;
 }

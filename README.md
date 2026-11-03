@@ -27,7 +27,7 @@ To deploy, copy the folder to any static host (GitHub Pages, Netlify, Cloudflare
 | **Score** | Score digits are colored by place value. The high score is shown as HI. The score flashes and beeps every 100 points, and the number is spoken aloud ("yüz!", "iki yüz!"). |
 | **Learning numbers** | When a run ends or you pause, a **score card** shows the score as a big number with its words ("387 → üç yüz seksen yedi") and reads it aloud. **🧩 Parçalara ayır / Break it down** splits it into place values (3 yüzlük · 8 onluk · 7 birlik) with base-ten blocks and "300 + 80 + 7 = 387", and narrates each step; tap any column to hear that part. **🎲 Sayı oyunu / Number game** is a side game of counting and addition with pictures from the current theme. Tapping a picture counts it aloud, there are 5 stars per round, and the first questions use the digits of the last score. Numbers are in Turkish by default (English also available). |
 | **Share** | Native share sheet (on mobile), X, Facebook, WhatsApp, Telegram, copy link |
-| **Customize** | Theme · background (theme default, solid color, or an uploaded image with cover/tile/stretch, parallax scroll and opacity) · dino, obstacle and ground colors · day/night cycle · speed multiplier · invincible practice mode · learning: number language, read aloud, colored digits, number game limit (5 / 10 / 20) |
+| **Customize** | Theme · background (theme default, solid color, or an uploaded image with cover/tile/stretch, parallax scroll and opacity) · dino, obstacle and ground colors · day/night cycle · speed multiplier · invincible practice mode · learning: number language, voice (with a Listen button), read aloud, colored digits, number game limit (5 / 10 / 20) |
 
 URL options: `?theme=night`, `?embed=1` (game only, for iframes), `?bot=1` (autopilot).
 
@@ -36,7 +36,7 @@ The game object is exposed as `window.game` for tinkering in the dev console, e.
 ## Project layout
 
 ```
-index.html            page markup (toolbar, dialogs, leaderboards)
+index.html            page markup (toolbar, score card, dialogs)
 css/style.css         page styles; colors come from the active theme
 src/
   main.js             bootstraps everything, reads URL options
@@ -49,7 +49,7 @@ src/
     dino.js           player physics (jump, duck, fast fall, blink)
     obstacles.js      obstacle types + spawner
     scenery.js        sky, background image, sun/moon/stars, skyline, clouds, ground
-  ui.js               toolbar, overlay, dialogs, leaderboards, share, screenshot
+  ui.js               toolbar, overlay, dialogs, share, screenshot
   input.js            keyboard / mouse / touch
   audio.js            synthesized sound effects (Web Audio)
   storage.js          settings + high score in localStorage
@@ -129,6 +129,8 @@ To make numbers readable and speakable in a new language, add an entry to `LEARN
 
 - The high score is stored only in your browser's localStorage, and isn't updated while invincible or when the speed multiplier isn't 1×.
 - Speech uses the voices installed on the device. On macOS, Chrome and Safari include a Turkish voice (Yelda). If no voice is found for the chosen number language, the score card says so.
+- How natural it sounds depends mostly on the voice. The game picks the best one it finds ("Natural", "Enhanced", "Premium" voices first), and you can choose another in Customize → Learning → Voice. To get better voices on Mac, iPhone and iPad, go to Settings → Accessibility → Spoken Content → System Voice → Manage Voices (for Turkish, e.g. Cem). Microsoft Edge includes natural online voices (Turkish: Emel, Ahmet).
+- Phrases are written as full sentences with punctuation ("Üç yüzlük, yani üç yüz.") because voices take their intonation from it.
 - Uploaded background images are downscaled and saved with your settings. A very large image may not fit in localStorage, and the game will tell you if that happens.
 
 ## License

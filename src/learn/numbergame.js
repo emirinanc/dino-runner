@@ -20,15 +20,17 @@ const el = (tag, cls, text) => {
 export class NumberGame {
   /**
    * @param {HTMLDialogElement} dialog
-   * @param {{ speech, settings, t, sprites: () => {name: string, src: string, w: number, h: number}[] }} deps
+   * @param {{ speech, settings, t, sprites: () => {name: string, src: string, w: number, h: number}[], onPlay: () => void }} deps
    *   `sprites` returns the pictures to count, as image data URLs.
+   *   `onPlay` starts the dino game ("Back to the game" or Space on the final screen).
    */
-  constructor(dialog, { speech, settings, t, sprites }) {
+  constructor(dialog, { speech, settings, t, sprites, onPlay }) {
     this.dialog = dialog;
     this.speech = speech;
     this.settings = settings;
     this.t = t;
     this.sprites = sprites;
+    this.onPlay = onPlay;
     this.mode = 'mix';
     this.q = (sel) => dialog.querySelector(sel);
 
@@ -38,12 +40,25 @@ export class NumberGame {
         this.newRound();
       });
     }
-    for (const btn of dialog.querySelectorAll('[data-action=close], [data-action=close-done]')) {
-      btn.addEventListener('click', () => dialog.close());
-    }
+    this.q('[data-action=close]').addEventListener('click', () => dialog.close());
+    this.q('[data-action=close-done]').addEventListener('click', () => this.play());
+    // On the final screen, Space goes straight back to the dino game, wherever
+    // the focus is. Listening on the document runs before the game's own
+    // keyboard handler (on window), which must not see this key press.
+    document.addEventListener('keydown', (e) => {
+      if (e.code !== 'Space' || e.repeat || !dialog.open || this.q('.ng-done').hidden) return;
+      e.preventDefault();
+      e.stopPropagation();
+      this.play();
+    });
     this.q('[data-action=again]').addEventListener('click', () => this.newRound());
     this.q('[data-action=repeat]').addEventListener('click', () => this.askAloud());
     dialog.addEventListener('close', () => this.speech.cancel());
+  }
+
+  play() {
+    this.dialog.close();
+    this.onPlay?.();
   }
 
   get L() {
@@ -191,9 +206,7 @@ export class NumberGame {
     btn.classList.add('right');
     this.stars++;
     this.renderStars();
-    const sentence = q.kind === 'count'
-      ? `${L.words(q.n)}!`
-      : `${L.words(q.a)} ${L.plus} ${L.words(q.b)} ${L.equals} ${L.words(q.answer)}.`;
+    const sentence = q.kind === 'count' ? `${L.words(q.n)}!` : L.addResult(L.words(q.a), L.words(q.b), L.words(q.answer));
     const done = this.speech.say(`${pick(L.praise)} ${sentence}`, lang);
     const minWait = new Promise((r) => setTimeout(r, 1200));
     Promise.all([done, minWait]).then(() => {
@@ -209,6 +222,7 @@ export class NumberGame {
     const done = this.q('.ng-done');
     done.hidden = false;
     this.q('.ng-done-stars').textContent = '⭐'.repeat(this.stars);
+    this.q('[data-action=close-done]').focus();
     this.speech.say(this.L.roundDone(this.L.words(this.stars)), this.settings.learning.lang);
   }
 

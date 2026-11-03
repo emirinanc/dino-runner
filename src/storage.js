@@ -29,6 +29,7 @@ export const DEFAULT_SETTINGS = {
     speak: true, // read the score aloud at game over and at every 100 points
     coloredDigits: true, // color score digits by place value (ones, tens, hundreds…)
     maxNumber: 10, // biggest number in the counting / addition game
+    voices: {}, // chosen voice per number language: { tr: voiceURI }; missing = best available
   },
 };
 
@@ -56,7 +57,7 @@ export function loadSettings() {
     ...DEFAULT_SETTINGS,
     ...saved,
     custom: { ...DEFAULT_SETTINGS.custom, ...saved.custom },
-    learning: { ...DEFAULT_SETTINGS.learning, ...saved.learning },
+    learning: { ...DEFAULT_SETTINGS.learning, ...saved.learning, voices: { ...saved.learning?.voices } },
   };
 }
 

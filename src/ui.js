@@ -20,7 +20,7 @@ export class UI {
     this.game = game;
     this.settings = settings;
     this.sound = sound;
-    this.speech = new Speech();
+    this.speech = new Speech(settings);
     this.lastScore = 0;
   }
 
@@ -98,6 +98,8 @@ export class UI {
 
   onStateChange(state) {
     this.updateOverlay();
+    // Starting the game always closes whatever dialog was open.
+    if (state === 'running') for (const dlg of document.querySelectorAll('dialog[open]')) dlg.close();
     if (state === 'paused') this.scoreCard.show(this.game.score);
     else if (state !== 'over') this.scoreCard.hide();
   }
@@ -187,7 +189,7 @@ export class UI {
 
   onMilestone(score) {
     if (this.settings.learning.speak) {
-      this.speech.say(learnLang(this.settings.learning.lang).words(score), this.settings.learning.lang, { rate: 1 });
+      this.speech.say(`${learnLang(this.settings.learning.lang).words(score)}!`, this.settings.learning.lang, { rate: 1 });
     }
   }
 
@@ -198,6 +200,7 @@ export class UI {
       settings: this.settings,
       t,
       sprites: () => this.countingSprites(),
+      onPlay: () => this.game.pressJump(),
     });
 
     const openGame = (seed) => {
@@ -310,8 +313,31 @@ export class UI {
       f.learnSpeak.checked = s.learning.speak;
       f.learnColors.checked = s.learning.coloredDigits;
       f.learnMax.value = String(s.learning.maxNumber);
+      fillVoices();
       syncLabels();
     };
+
+    // Voices for the current number language, best first.
+    const fillVoices = () => {
+      const lang = this.settings.learning.lang;
+      const select = f.learnVoice;
+      select.replaceChildren(new Option(t('voiceAuto'), ''));
+      for (const v of this.speech.voicesFor(lang)) {
+        select.add(new Option(v.localService ? v.name : `${v.name} ☁︎`, v.voiceURI));
+      }
+      select.value = this.settings.learning.voices[lang] ?? '';
+      if (select.selectedIndex < 0) select.value = '';
+      select.dataset.lang = lang;
+    };
+    this.speech.onVoicesChanged(() => dlg.open && fillVoices());
+
+    $('btn-voice-test').addEventListener('click', () => {
+      const L = learnLang(this.settings.learning.lang);
+      this.speech.say(
+        [L.yourScore(L.words(387)), L.addResult(L.words(3), L.words(4), L.words(7))],
+        this.settings.learning.lang,
+      );
+    });
 
     const syncLabels = () => {
       $('speed-value').textContent = `${Number(f.speed.value)}×`;
@@ -338,6 +364,9 @@ export class UI {
         coloredDigits: f.learnColors.checked,
         maxNumber: Number(f.learnMax.value),
       });
+      // the voice list belongs to the previous language until it's refilled
+      if (f.learnVoice.dataset.lang === s.learning.lang) s.learning.voices[s.learning.lang] = f.learnVoice.value;
+      else fillVoices();
       syncLabels();
       this.save();
       this.refresh();

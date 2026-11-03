@@ -361,6 +361,15 @@ dialog.numbers { width: min(820px, calc(100vw - 24px)); padding: 14px 18px 20px;
 .ng-done-stars { margin: 0 0 16px; font-size: clamp(40px, 10vw, 72px); animation: pop 0.5s ease-out; }
 .ng-done menu { justify-content: center; }
 .ng-done menu button { font-size: 1.1rem; padding: 10px 18px; }
+.ng-done kbd {
+  margin-left: 4px;
+  padding: 1px 6px;
+  border: 1px solid var(--line);
+  border-radius: 5px;
+  font: 600 0.75em var(--font);
+  opacity: 0.7;
+}
+@media (pointer: coarse) { .ng-done kbd { display: none; } }
 
 @keyframes pop { 0% { transform: scale(0.6); } 70% { transform: scale(1.12); } 100% { transform: scale(1); } }
 @keyframes shake { 0%, 100% { transform: translateX(0); } 20%, 60% { transform: translateX(-8px); } 40%, 80% { transform: translateX(8px); } }

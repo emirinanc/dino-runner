@@ -13,9 +13,13 @@ function typingIn(target) {
   return target instanceof Element && !!target.closest('input, textarea, select, [contenteditable], dialog[open]');
 }
 
+// While a dialog is open the game ignores the keyboard, even when focus has
+// fallen back to <body> (e.g. the focused button inside the dialog was hidden).
+const dialogOpen = () => !!document.querySelector('dialog[open]');
+
 export function bindInput(game, playArea) {
   window.addEventListener('keydown', (e) => {
-    if (typingIn(e.target) || e.metaKey || e.ctrlKey || e.altKey) return;
+    if (typingIn(e.target) || dialogOpen() || e.metaKey || e.ctrlKey || e.altKey) return;
     if (JUMP.has(e.code)) {
       e.preventDefault();
       if (!e.repeat) game.pressJump();
