@@ -9,7 +9,7 @@ import { DEFAULT_SETTINGS, saveSettings, saveHighScore } from './storage.js';
 import { Speech } from './learn/speech.js';
 import { ScoreCard } from './learn/scorecard.js';
 import { NumberGame } from './learn/numbergame.js';
-import { learnLang } from './learn/numbers.js';
+import { learnLang, numberSentence } from './learn/numbers.js';
 
 const ZOOMS = [1, 1.5, 2, 3];
 const $ = (id) => document.getElementById(id);
@@ -335,7 +335,7 @@ export class UI {
     $('btn-voice-test').addEventListener('click', () => {
       const L = learnLang(this.settings.learning.lang);
       this.speech.say(
-        [L.yourScore(L.words(387)), L.addResult(L.words(3), L.words(4), L.words(7))],
+        [numberSentence(this.settings.learning.lang, 387), L.addResult(L.words(3), L.words(4), L.words(7))],
         this.settings.learning.lang,
       );
     });

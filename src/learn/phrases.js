@@ -9,7 +9,7 @@ export const GAME_MAX = 20; // highest "Number game goes up to" option
 export const SCORE_MAX = 999; // scores up to this are read with clips
 const ROUND = 5; // stars in a number game round
 
-/** Utterances as the game says them; split them with `sentences()` from speech.js. */
+/** Utterances and sum pieces as the game says them; split them with `sentences()` from speech.js. */
 export function allPhrases(langId) {
   const L = learnLang(langId);
   const w = L.words;
@@ -29,11 +29,8 @@ export function allPhrases(langId) {
   for (let n = 1; n <= GAME_MAX + 1; n++) add(L.lessResult(w(n)), L.moreResult(w(n)));
   for (let s = 0; s <= ROUND; s++) add(L.roundDone(w(s)));
 
-  // score card: reading the score, the breakdown, tapping a column
-  for (let n = 0; n <= SCORE_MAX; n++) {
-    add(L.yourScore(w(n)));
-    add(...breakdownScript(n, langId).map((s) => s.text));
-  }
+  // score card: reading the score, the breakdown (sums are said in pieces), tapping a column
+  for (let n = 0; n <= SCORE_MAX; n++) add(...breakdownScript(n, langId).flatMap((s) => s.pieces ?? [s.text]));
   for (const place of PLACES) {
     for (let digit = 0; digit <= 9; digit++) add(placeSentence(langId, { digit, place, value: digit * 10 ** PLACES.indexOf(place) }));
   }

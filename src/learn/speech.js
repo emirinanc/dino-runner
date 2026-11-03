@@ -135,8 +135,9 @@ export class Speech {
 
   /**
    * Speaks the steps in order, interrupting whatever was being said. Each step
-   * is a string or { text, onStart }. Resolves when the last one finishes (or
-   * is interrupted), or right away if nothing can speak.
+   * is a string or { text, pieces, onStart }: `pieces` are the clips a step is
+   * built from when it has no clip of its own (a breakdown sum). Resolves when
+   * the last one finishes (or is interrupted), or right away if nothing can speak.
    */
   say(steps, langId, { rate = 0.92 } = {}) {
     this.cancel();
@@ -146,7 +147,9 @@ export class Speech {
     // One voice per utterance: clips only if every sentence has one.
     if (this.clipsFor(langId)) {
       const parts = list.flatMap((step) =>
-        sentences(step.text, tag).map((text, i) => ({ url: this.clipUrl(langId, text), onStart: i ? null : step.onStart })));
+        (step.pieces ?? [step.text])
+          .flatMap((text) => sentences(text, tag))
+          .map((text, i) => ({ url: this.clipUrl(langId, text), onStart: i ? null : step.onStart })));
       if (parts.length && parts.every((p) => p.url)) return this.playClips(parts);
     }
     return this.speakWithBrowser(list, langId, rate);
@@ -208,7 +211,7 @@ export class Speech {
  */
 function polish(text, tag) {
   const capped = text.trim().replace(/(^|[.!?]\s+)(\p{Ll})/gu, (_, before, c) => before + c.toLocaleUpperCase(tag));
-  return !capped || /[.!?…:]$/.test(capped) ? capped : `${capped}.`;
+  return !capped || /[.!?…:,]$/.test(capped) ? capped : `${capped}.`;
 }
 
 /**

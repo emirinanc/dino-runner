@@ -1,7 +1,7 @@
 // The card under the game that shows the score as a big, readable number with
 // its words, reads it aloud, and (for parents) breaks it into place values.
 
-import { PLACE_COLORS, placeValues, learnLang, placeLabel, placeSentence, breakdownScript } from './numbers.js';
+import { PLACE_COLORS, placeValues, learnLang, placeLabel, placeSentence, numberSentence, breakdownScript } from './numbers.js';
 
 const el = (tag, cls, text) => {
   const e = document.createElement(tag);
@@ -156,14 +156,14 @@ export class ScoreCard {
 
   read() {
     this.highlight('number');
-    const L = learnLang(this.lang);
-    return this.speech.say(L.yourScore(L.words(this.score)), this.lang).then(() => this.highlight(null));
+    return this.speech.say(numberSentence(this.lang, this.score), this.lang).then(() => this.highlight(null));
   }
 
   /** Narrates the breakdown step by step, highlighting each column as it's read. */
   explain() {
     const steps = breakdownScript(this.score, this.lang).map((s) => ({
       text: s.text,
+      pieces: s.pieces,
       onStart: () => this.highlight(s.place ?? 'number'),
     }));
     return this.speech.say(steps, this.lang).then(() => this.highlight(null));

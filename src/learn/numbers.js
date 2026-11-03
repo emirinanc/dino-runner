@@ -101,7 +101,6 @@ export const LEARN_LANGS = {
     equals: 'eşittir',
     // Spoken sentences. Commas and full stops matter: voices pause and change
     // intonation on them, which makes them sound much less robotic.
-    yourScore: (w) => `${w} puan!`,
     placeStep: (head, value) => `${head}, yani ${value}.`,
     howMany: 'Kaç tane?',
     howManyAll: 'Hepsi kaç tane?',
@@ -129,7 +128,6 @@ export const LEARN_LANGS = {
     },
     plus: 'plus',
     equals: 'equals',
-    yourScore: (w) => `${w} points!`,
     placeStep: (head, value) => `${head}, that's ${value}.`,
     howMany: 'How many?',
     howManyAll: 'How many altogether?',
@@ -163,20 +161,32 @@ export function placeSentence(langId, { digit, place, value }) {
   return digit ? L.placeStep(head, L.words(value)) : `${head}.`;
 }
 
+/** A number said on its own: "Üç yüz seksen yedi." (the score card reads the score like this) */
+export function numberSentence(langId, n) {
+  return `${learnLang(langId).words(n)}.`;
+}
+
 /**
  * The sentences read out for a breakdown, one per step, e.g. for 347 in Turkish:
  *   "Üç yüz kırk yedi." · "Üç yüzlük, yani üç yüz." · "Dört onluk, yani kırk." ·
- *   "Yedi birlik, yani yedi." · "Üç yüz, artı kırk, artı yedi, eşittir üç yüz kırk yedi!"
+ *   "Yedi birlik, yani yedi." · "Üç yüz, artı kırk, artı yedi, eşittir, üç yüz kırk yedi."
+ *
+ * The sum is also given as `pieces`, so voice clips can build it from a few
+ * short recordings ("üç yüz," "artı kırk," "eşittir,") instead of one per number.
  */
 export function breakdownScript(n, langId) {
   const L = learnLang(langId);
   const parts = placeValues(n);
-  const steps = [{ text: `${L.words(n)}.`, place: null }];
+  const steps = [{ text: numberSentence(langId, n), place: null }];
   for (const p of parts) steps.push({ text: placeSentence(langId, p), place: p.place });
   const nonZero = parts.filter((p) => p.digit);
   if (nonZero.length > 1) {
-    const sum = nonZero.map((p) => L.words(p.value)).join(`, ${L.plus} `);
-    steps.push({ text: `${sum}, ${L.equals} ${L.words(n)}!`, place: 'all' });
+    const pieces = [
+      ...nonZero.map((p, i) => `${i ? `${L.plus} ` : ''}${L.words(p.value)},`),
+      `${L.equals},`,
+      numberSentence(langId, n),
+    ];
+    steps.push({ text: pieces.join(' '), pieces, place: 'all' });
   }
   return steps;
 }
