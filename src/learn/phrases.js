@@ -7,7 +7,7 @@ import { learnLang, breakdownScript, placeSentence, PLACES } from './numbers.js'
 
 export const GAME_MAX = 20; // highest "Number game goes up to" option
 export const SCORE_MAX = 999; // scores up to this are read with clips
-const ROUND = 5; // stars in a number game round
+const ROUND = 5; // mangoes in a number game round
 
 /** Utterances and sum pieces as the game says them; split them with `sentences()` from speech.js. */
 export function allPhrases(langId) {

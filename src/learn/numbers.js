@@ -116,7 +116,7 @@ export const LEARN_LANGS = {
     swapResult: (a, b, sum) => `Aynı! ${a} artı ${b}, ${sum} eder! ${b} artı ${a}, yine ${sum}.`,
     lessResult: (prev) => `${trFrom(prev)} bir eksik!`,
     moreResult: (prev) => `${trFrom(prev)} bir fazla!`,
-    roundDone: (w) => `Harika! ${w} yıldız kazandın!`,
+    roundDone: (w) => `Harika! ${w} mango kazandın!`,
   },
   en: {
     name: 'English',
@@ -141,7 +141,7 @@ export const LEARN_LANGS = {
     swapResult: (a, b, sum) => `The same! ${a} plus ${b} is ${sum}, and ${b} plus ${a} is ${sum} too.`,
     lessResult: (prev) => `One less than ${prev}!`,
     moreResult: (prev) => `One more than ${prev}!`,
-    roundDone: (w) => `Great! You earned ${w} stars!`,
+    roundDone: (w) => `Great! You earned ${w} mangoes!`,
   },
 };
 

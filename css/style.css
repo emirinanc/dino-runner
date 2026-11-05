@@ -297,7 +297,13 @@ body.embed .controls { display: none; }
 dialog.numbers { width: min(820px, calc(100vw - 24px)); padding: 14px 18px 20px; }
 .ng-header { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
 .ng-modes { flex: 1; }
-.ng-stars { font-size: 28px; color: #f59f00; letter-spacing: 2px; }
+/* One mango per question. The ones still to win are a faded grey mango rather
+   than an outline symbol: the same shape, so the child sees what's coming, and
+   it stays visible on both light and dark themes. */
+.ng-mangoes { display: inline-flex; gap: 2px; font-size: 26px; line-height: 1; }
+.ng-mangoes span { display: inline-block; filter: grayscale(1); opacity: 0.4; }
+.ng-mangoes span.won { filter: none; opacity: 1; }
+.ng-mangoes span.fresh { animation: earn 0.6s ease-out; }
 .ng-close { border: 0; background: none; font-size: 22px; cursor: pointer; padding: 4px 8px; }
 
 .ng-play { text-align: center; }
@@ -413,7 +419,7 @@ dialog.numbers { width: min(820px, calc(100vw - 24px)); padding: 14px 18px 20px;
 .ng-option:disabled { opacity: 0.45; cursor: default; transform: none; }
 
 .ng-done { text-align: center; padding: 20px 0; }
-.ng-done-stars { margin: 0 0 16px; font-size: clamp(40px, 10vw, 72px); animation: pop 0.5s ease-out; }
+.ng-done-mangoes { margin: 0 0 16px; font-size: clamp(40px, 10vw, 72px); animation: pop 0.5s ease-out; }
 .ng-done menu { justify-content: center; }
 .ng-done menu button { font-size: 1.1rem; padding: 10px 18px; }
 .ng-done kbd {
@@ -427,6 +433,7 @@ dialog.numbers { width: min(820px, calc(100vw - 24px)); padding: 14px 18px 20px;
 @media (pointer: coarse) { .ng-done kbd { display: none; } }
 
 @keyframes pop { 0% { transform: scale(0.6); } 70% { transform: scale(1.12); } 100% { transform: scale(1); } }
+@keyframes earn { 0% { transform: scale(0.4) rotate(-20deg); } 60% { transform: scale(1.5) rotate(10deg); } 100% { transform: none; } }
 @keyframes nudge { 50% { transform: scale(1.3); } }
 @keyframes leave { from { opacity: 1; transform: none; } to { opacity: 0.3; transform: translateY(-10px) scale(0.85); } }
 @keyframes arrive { from { opacity: 0; transform: translateY(-30px) scale(0.4); } }

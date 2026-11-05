@@ -1,6 +1,6 @@
 // Side game: counting and addition with pictures from the current theme.
 //
-// A round is 5 questions; every solved question earns a star. Tapping a
+// A round is 5 questions; every solved question earns a mango. Tapping a
 // picture counts it out loud ("bir, iki, üç…"), so the child can count before
 // answering.
 //
@@ -107,7 +107,7 @@ export class NumberGame {
     this.questions = this.makeQuestions(this.seed);
     this.seed = undefined; // only the first round uses the score
     this.index = 0;
-    this.stars = 0;
+    this.mangoes = 0;
     this.solvedAdds = [];
     for (const tab of this.dialog.querySelectorAll('[data-mode]')) {
       tab.setAttribute('aria-pressed', String(tab.dataset.mode === this.mode));
@@ -186,7 +186,7 @@ export class NumberGame {
     this.busy = false;
     const L = this.L;
 
-    this.renderStars();
+    this.renderMangoes();
     this.renderHistory(q);
     this.q('.ng-prompt').textContent = q.kind === 'count' ? L.howMany : q.relation ? L.relation[q.relation] : L.howManyAll;
 
@@ -386,8 +386,8 @@ export class NumberGame {
 
     this.solved = true;
     btn.classList.add('right');
-    this.stars++;
-    this.renderStars();
+    this.mangoes++;
+    this.renderMangoes({ earned: true });
     if (q.kind === 'add') this.solvedAdds.push(q);
     const done = this.speech.say(this.praise(q), this.lang);
     const minWait = wait(1200);
@@ -450,12 +450,22 @@ export class NumberGame {
     this.q('.ng-play').hidden = true;
     const done = this.q('.ng-done');
     done.hidden = false;
-    this.q('.ng-done-stars').textContent = '⭐'.repeat(this.stars);
+    const box = this.q('.ng-done-mangoes');
+    box.textContent = '🥭'.repeat(this.mangoes);
+    box.setAttribute('aria-label', this.t('mangoCount', { n: this.mangoes, total: ROUND }));
     this.q('[data-action=close-done]').focus();
-    this.speech.say(this.L.roundDone(this.L.words(this.stars)), this.lang);
+    this.speech.say(this.L.roundDone(this.L.words(this.mangoes)), this.lang);
   }
 
-  renderStars() {
-    this.q('.ng-stars').textContent = '★'.repeat(this.stars) + '☆'.repeat(ROUND - this.stars);
+  /**
+   * One mango per question: earned ones in color, the rest greyed out, so the
+   * child sees how many are left. `earned`: the last one was just won (it pops).
+   */
+  renderMangoes({ earned = false } = {}) {
+    const row = this.q('.ng-mangoes');
+    row.replaceChildren(...Array.from({ length: ROUND }, (_, i) => el('span', i < this.mangoes ? 'won' : null, '🥭')));
+    if (earned) row.children[this.mangoes - 1]?.classList.add('fresh');
+    // the emoji alone would be read as "mango, mango, mango…"
+    row.setAttribute('aria-label', this.t('mangoCount', { n: this.mangoes, total: ROUND }));
   }
 }
