@@ -24,6 +24,7 @@ export const DEFAULT_SETTINGS = {
     obstacle: null,
     ground: null,
   },
+  character: 'trex', // the dino you play with (see src/characters.js)
   learning: {
     lang: 'tr', // language numbers are written and spoken in (see src/learn/numbers.js)
     speak: true, // read the score aloud at game over and at every 100 points

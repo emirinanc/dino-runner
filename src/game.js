@@ -33,6 +33,7 @@ export class Game extends EventTarget {
     this.bot = bot;
 
     this.bank = new SpriteBank();
+    this.bank.character = settings.character;
     this.dino = new Dino();
     this.obstacles = new ObstacleField();
     this.scenery = new Scenery();
@@ -53,6 +54,7 @@ export class Game extends EventTarget {
   /** Call after changing anything in `settings` so colors/images refresh. */
   settingsChanged() {
     this.settingsVersion++;
+    this.bank.character = this.settings.character;
     const src = this.effectiveCustom().image ?? getTheme(this.settings.theme).image ?? null;
     if (src !== this.imageSrc) {
       this.imageSrc = src;
@@ -196,7 +198,7 @@ export class Game extends EventTarget {
   hitsObstacle() {
     const d = this.dino;
     const sprite = this.bank.dino(d.frame);
-    const dy = groundY - sprite.h * CONFIG.pixelSize + d.jumpY;
+    const dy = groundY - sprite.h * sprite.px + d.jumpY;
     for (const o of this.obstacles.list) {
       if (o.x > d.x + 80) break;
       for (const part of o.parts()) {
@@ -268,7 +270,7 @@ export class Game extends EventTarget {
     const d = this.dino;
     const sprite = this.bank.dino(d.frame);
     ctx.globalAlpha = palette.dinoAlpha;
-    drawSprite(ctx, sprite, d.x, groundY - sprite.h * CONFIG.pixelSize + d.jumpY);
+    drawSprite(ctx, sprite, d.x, groundY - sprite.h * sprite.px + d.jumpY);
     ctx.globalAlpha = 1;
 
     this.drawScore(ctx, palette, now);

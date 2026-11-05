@@ -154,6 +154,12 @@ a.chip { color: inherit; }
 
 .panel { border-top: 1px solid var(--line); padding-block: 14px; }
 .panel h2 { margin: 0 0 8px; font-size: 0.95rem; }
+.panel h2.sub { margin-top: 14px; }
+
+.chip.character { display: inline-flex; align-items: center; gap: 8px; padding-block: 4px; }
+.character-preview { height: 32px; width: auto; image-rendering: pixelated; }
+/* the preview is in the dino's colors, so don't fill the selected chip with the accent color */
+.chip.character[aria-pressed='true'] { background: var(--chip); color: inherit; box-shadow: inset 0 0 0 2px var(--accent); }
 
 .chips { display: flex; flex-wrap: wrap; gap: 8px; }
 

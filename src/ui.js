@@ -3,6 +3,7 @@
 
 import { CONFIG } from './config.js';
 import { THEMES } from './themes.js';
+import { CHARACTERS } from './characters.js';
 import { OBSTACLE_TYPES } from './entities/obstacles.js';
 import { t, setLanguage } from './i18n.js';
 import { DEFAULT_SETTINGS, saveSettings, saveHighScore } from './storage.js';
@@ -26,6 +27,7 @@ export class UI {
 
   init() {
     this.buildThemeButtons();
+    this.buildCharacterButtons();
     this.bindToolbar();
     this.bindCustomize();
     this.bindEmbed();
@@ -36,7 +38,10 @@ export class UI {
     this.game.addEventListener('statechange', (e) => this.onStateChange(e.detail.state));
     this.game.addEventListener('gameover', (e) => this.onGameOver(e.detail));
     this.game.addEventListener('milestone', (e) => this.onMilestone(e.detail.score));
-    this.game.addEventListener('palette', (e) => this.applyPageColors(e.detail));
+    this.game.addEventListener('palette', (e) => {
+      this.applyPageColors(e.detail);
+      this.drawCharacterPreviews();
+    });
 
     window.addEventListener('resize', () => this.fit());
     this.refresh();
@@ -51,7 +56,11 @@ export class UI {
     for (const btn of document.querySelectorAll('[data-theme-id]')) {
       btn.setAttribute('aria-pressed', String(btn.dataset.themeId === this.settings.theme));
     }
+    for (const btn of document.querySelectorAll('[data-character-id]')) {
+      btn.setAttribute('aria-pressed', String(btn.dataset.characterId === this.settings.character));
+    }
     this.fit();
+    this.drawCharacterPreviews();
     this.updateOverlay();
     this.updateHalloween();
     this.scoreCard?.refresh();
@@ -142,6 +151,45 @@ export class UI {
       btn.addEventListener('click', () => this.setTheme(id));
       box.append(btn);
     }
+  }
+
+  buildCharacterButtons() {
+    const box = $('characters');
+    for (const [id, character] of Object.entries(CHARACTERS)) {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'chip character';
+      btn.dataset.characterId = id;
+      const preview = document.createElement('canvas');
+      preview.className = 'character-preview';
+      const name = document.createElement('span');
+      name.dataset.i18n = character.name;
+      btn.append(preview, name);
+      btn.addEventListener('click', () => this.setCharacter(id));
+      box.append(btn);
+    }
+  }
+
+  /** Each character in the current version's colors and accessories. */
+  drawCharacterPreviews() {
+    const { bank, palette } = this.game;
+    bank.use(palette);
+    for (const btn of document.querySelectorAll('[data-character-id]')) {
+      const s = bank.dino('stand', btn.dataset.characterId);
+      const c = btn.querySelector('canvas');
+      c.width = s.canvas.width * s.px;
+      c.height = s.canvas.height * s.px;
+      const ctx = c.getContext('2d');
+      ctx.imageSmoothingEnabled = false;
+      ctx.globalAlpha = palette.dinoAlpha;
+      ctx.drawImage(s.canvas, 0, 0, c.width, c.height);
+    }
+  }
+
+  setCharacter(id) {
+    this.settings.character = id;
+    this.save();
+    this.refresh();
   }
 
   setTheme(id) {

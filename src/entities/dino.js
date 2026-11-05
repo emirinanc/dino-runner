@@ -76,7 +76,7 @@ export class Dino {
     if (this.time > this.blinkAt + C.blinkMs) this.blinkAt = nextBlink(this.time);
   }
 
-  /** Name of the frame in DINO_FRAMES to draw right now. */
+  /** Name of the character frame (see characters.js) to draw right now. */
   get frame() {
     if (this.crashed) return 'dead';
     if (!this.running) return this.time >= this.blinkAt ? 'blink' : 'stand';

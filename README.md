@@ -3,7 +3,7 @@
 An ad-free, endless dino runner game in the spirit of the browser "no internet" game, built to be easy to modify.
 It's plain HTML, CSS and JavaScript modules: no build step, no dependencies, no trackers.
 
-All pixel art (the dino, obstacles and scenery) is original and stored as editable text in `src/art.js`.
+All pixel art is stored as editable text in `src/characters.js` (the dinos) and `src/art.js` (obstacles, scenery, accessories). The T-Rex is based on the dinosaur of Chromium's offline game (BSD license, see [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)); everything else is original.
 
 ## Run it
 
@@ -23,6 +23,7 @@ To deploy, copy the folder to any static host (GitHub Pages, Netlify, Cloudflare
 |---|---|
 | **Controls** | Space / ↑ / W to jump (hold to jump higher) · ↓ / S to duck or fall faster · P / Esc to pause · Enter to restart. On touch screens, tap to jump and hold the bottom of the play area to duck. |
 | **Versions** | Classic (with an automatic day/night cycle), Night, Color, Hero (cape and mask, city skyline), Jester, Dina (with a bow), Halloween (ghost dino, pumpkins, tombstones, bats). In October a banner suggests the Halloween version. |
+| **Characters** | T-Rex (default) or Chubby. Whichever you pick takes on the version's colors and accessories; the buttons preview each character in the current version. |
 | **Toolbar** | Number game · Sound on/off · Zoom (1×, 1.5×, 2×, 3×) · Screenshot (downloads a PNG) · Customize · Embed code · Language (English, Türkçe, Português (Brasil), 日本語, Español) |
 | **Score** | Score digits are colored by place value. The high score is shown as HI. The score flashes and beeps every 100 points, and the number is spoken aloud ("yüz!", "iki yüz!"). |
 | **Learning numbers** | When a run ends or you pause, a **score card** shows the score as a big number with its words ("387 → üç yüz seksen yedi") and reads it aloud. **🧩 Parçalara ayır / Break it down** splits it into place values (3 yüzlük · 8 onluk · 7 birlik) with base-ten blocks and "300 + 80 + 7 = 387", and narrates each step; tap any column to hear that part. **🎲 Sayı oyunu / Number game** is a side game of counting and addition with pictures from the current theme. Tapping a picture counts it aloud, there are 5 stars per round, and the first questions use the digits of the last score. A wrong answer doesn't just say "try again": the buttons lock and the game counts every picture together with the child, then asks again. Addition questions come in chains where each one changes the last in one way, so patterns can be noticed: the groups swap places (1 + 7 → 7 + 1, "Aynı!"), or one picture goes away or arrives (1 + 7 → 1 + 6, "Sekizden bir eksik!"). Solved equations stay in a row above the question. Numbers are in Turkish by default (English also available). |
@@ -41,7 +42,8 @@ css/style.css         page styles; colors come from the active theme
 src/
   main.js             bootstraps everything, reads URL options
   config.js           gameplay tuning: physics, speed, gaps, scoring, night cycle
-  art.js              ALL pixel art as text grids + palette character map
+  characters.js       the dino characters (T-Rex, Chubby) as text grids
+  art.js              obstacles, scenery and accessories as text grids + palette character map
   themes.js           theme registry and color derivation / day-night mixing
   sprites.js          renders art grids to canvases; pixel-perfect collisions
   game.js             game loop, state machine, rendering, scoring
@@ -100,8 +102,8 @@ Every palette key and its default is listed in `deriveColors()` in `src/themes.j
 
 Sprites in `src/art.js` are arrays of strings. Each character is one pixel, and `CHAR_COLORS` maps characters to palette keys. For example, `X` → `body` and `O` → `obstacle`, and `.` is transparent. Edit a grid, reload `tools/gallery.html`, and you'll see the result in every theme.
 
-- **New character for the dino:** edit `DINO_TOP`, `LEGS`, `DUCK_TOP` and `DUCK_LEGS`. If the eye moves, update `EYE`.
-- **New accessory** (hat, glasses, …): add it to `ACCESSORIES` with a grid and its position per pose (`stand`, `duck`), then list it in a theme's `accessories`.
+- **New character:** add an entry to `CHARACTERS` in `src/characters.js` and a name for it in `src/i18n.js`; it shows up in the character picker. A character has a standing body (`stand`) and legs for standing and running, a ducking body (`duck`) with two leg frames, an eye position with open / blink / dead patterns, its pixel size (`px`: 1 for fine art like the T-Rex, 2 for chunky art), and `anchors` saying where each accessory sits in each pose.
+- **New accessory** (hat, glasses, …): add a grid to `ACCESSORIES` in `src/art.js`, give it an anchor in every character, then list it in a theme's `accessories`.
 - **New palette key:** add a character to `CHAR_COLORS`, give it a default in `deriveColors()`, and set it in your theme.
 
 ### Adding an obstacle

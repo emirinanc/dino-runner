@@ -36,120 +36,17 @@ export function grid(rows, name = '') {
   return { rows: rows.map((r) => r.padEnd(w, '.')), w, h: rows.length };
 }
 
-// --- Dino -------------------------------------------------------------------
-// Standing pose: 22×23. The 3×3 eye sits at EYE.stand and is swapped for the
-// blink / dead variants below.
-
-const DINO_TOP = [
-  '...........XXXXXX.....',
-  '.......S.XXXXXXXXXX...',
-  '......SSXXXXXXXXXXXX..',
-  '.......XXXXXXXwwwXXXX.',
-  '.....SXXXXXXXXwwpXXXXX',
-  '....SSXXXXXXXXwppXXXXX',
-  '.....XXXXXXXXXXXXXXXXX',
-  '...S.XXXXXXXXXXXmmmmX.',
-  '..SSXXXXXXXXXXXXXXXX..',
-  '.S.XXXXXXXXXXXXXXX....',
-  'SSXXXXXXXbbbbbXXXX....',
-  '..XXXXXXbbbbbbbXXX....',
-  '..XXXXXXbbbbbbbX.XX...',
-  'X.XXXXXXbbbbbbbX..X...',
-  'XXXXXXXXbbbbbbX.......',
-  '.XXXXXXXXbbbbX........',
-  '...XXXXXXXXXX.........',
-  '....XXXXXXXX..........',
-  '.....XXXXXX...........',
-];
-
-const LEGS = {
-  stand: [
-    '.....XX..XX',
-    '.....X....X',
-    '.....X....X',
-    '.....XX...XX',
-  ],
-  runA: [
-    '.....XX..XX',
-    '.....X....XXX',
-    '.....X',
-    '.....XX',
-  ],
-  runB: [
-    '.....XX..XX',
-    '....XXX...X',
-    '..........X',
-    '..........XX',
-  ],
-};
-
-// Ducking pose: 30×12
-const DUCK_TOP = [
-  '....S...S...S.....XXXXXXX.....',
-  '...SSS.SSS.SSS..XXXXXwwwXXX...',
-  '...XXXXXXXXXXXXXXXXXXwwpXXXXX.',
-  'X.XXXXXXXXXXXXXXXXXXXwppXXXXXX',
-  'XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX',
-  'XXXXXXXXXXXbbbbbbbXXXXXXmmmmX.',
-  '.XXXXXXXXbbbbbbbbbXXXXXXXXXX..',
-  '..XXXXXXXbbbbbbbbXXXXXXXXX....',
-  '....XXXXXXXXXXXXXXX.XX........',
-];
-
-const DUCK_LEGS = {
-  A: [
-    '.....XX..XX',
-    '.....X....XXX',
-    '.....XX',
-  ],
-  B: [
-    '.....XX..XX',
-    '....XXX...X',
-    '..........XX',
-  ],
-};
-
-const EYE = { stand: { x: 14, y: 3 }, duck: { x: 21, y: 1 } };
-const EYES = {
-  open: ['www', 'wwp', 'wpp'],
-  blink: ['XXX', 'XXX', 'ppp'],
-  dead: ['pwp', 'wpw', 'pwp'],
-};
-
-function withEye(rows, pose, eye) {
-  const { x, y } = EYE[pose];
-  return rows.map((row, r) => {
-    const er = r - y;
-    if (er < 0 || er > 2) return row;
-    const padded = row.padEnd(x + 3, '.');
-    return padded.slice(0, x) + EYES[eye][er] + padded.slice(x + 3);
-  });
-}
-
-function dinoFrame(name, pose, top, legs, eye = 'open', anim = 0) {
-  return { ...grid(withEye([...top, ...legs], pose, eye), name), pose, anim };
-}
-
-// `anim` picks which accessory frame to show (e.g. the cape flutters).
-export const DINO_FRAMES = {
-  stand: dinoFrame('stand', 'stand', DINO_TOP, LEGS.stand),
-  blink: dinoFrame('blink', 'stand', DINO_TOP, LEGS.stand, 'blink'),
-  runA: dinoFrame('runA', 'stand', DINO_TOP, LEGS.runA, 'open', 0),
-  runB: dinoFrame('runB', 'stand', DINO_TOP, LEGS.runB, 'open', 1),
-  duckA: dinoFrame('duckA', 'duck', DUCK_TOP, DUCK_LEGS.A, 'open', 0),
-  duckB: dinoFrame('duckB', 'duck', DUCK_TOP, DUCK_LEGS.B, 'open', 1),
-  dead: dinoFrame('dead', 'stand', DINO_TOP, LEGS.stand, 'dead'),
-};
+// The dino characters are in characters.js.
 
 // --- Accessories ------------------------------------------------------------
-// Drawn on top of (or behind) the dino. Positions are in art pixels relative
-// to the dino frame's top-left, per pose. `onlyOnBody` paints only over body
-// pixels (so a mask doesn't cover the eye). Accessories never affect collisions.
+// Drawn on top of (or behind) the dino, at 2 game pixels per art pixel. Each
+// character places them (see `anchors` in characters.js). `onlyOnBody` paints
+// only over body pixels (so a mask doesn't cover the eye). Accessories never
+// affect collisions.
 
 export const ACCESSORIES = {
   bow: {
     layer: 'front',
-    poses: { stand: { x: 10, y: -2 }, duck: { x: 17, y: -2 } },
     frames: [grid([
       'RR.RR',
       'RRrRR',
@@ -159,12 +56,10 @@ export const ACCESSORIES = {
   mask: {
     layer: 'front',
     onlyOnBody: true,
-    poses: { stand: { x: 8, y: 3 }, duck: { x: 16, y: 1 } },
     frames: [grid(['KKKKKKKKKKKKKK', 'KKKKKKKKKKKKKK', 'KKKKKKKKKKKKKK'])],
   },
   cape: {
     layer: 'back',
-    poses: { stand: { x: -2, y: 6 }, duck: { x: -6, y: 1 } },
     frames: [
       grid([
         '.........QQQQ',
@@ -194,7 +89,6 @@ export const ACCESSORIES = {
   },
   jesterHat: {
     layer: 'front',
-    poses: { stand: { x: 10, y: -5 }, duck: { x: 17, y: -5 } },
     frames: [grid([
       'y.........y',
       'JJ...y...HH',
