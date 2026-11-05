@@ -158,7 +158,10 @@ export class Game extends EventTarget {
   }
 
   frame = (now) => {
-    const dt = Math.min(now - this.last, 50);
+    // `now` is when the frame began, which can be before the performance.now()
+    // that start() / resume() stored: a negative step would run the game
+    // backwards, e.g. a score of -1 right after starting.
+    const dt = Math.max(0, Math.min(now - this.last, 50));
     this.last = now;
     if (this.state === 'running') this.update(dt, now);
     else if (this.state !== 'paused') this.dino.update(dt);
