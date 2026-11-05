@@ -15,7 +15,10 @@ const CLIPS = 'audio';
 // Words in voice names that mean "high quality".
 const GOOD = /natural|neural|online|premium|enhanced|geliştirilmiş|wavenet|siri/i;
 // A moment of silence, played on the first tap so mobile browsers allow audio later.
-const SILENCE = 'data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAQB8AAIA+AAACABAAZGF0YQAAAAA=';
+// How long the first utterance waits for a manifest that's still loading.
+const MANIFEST_WAIT = 2000;
+const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+const SILENCE ='data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAQB8AAIA+AAACABAAZGF0YQAAAAA=';
 
 export class Speech {
   /** @param {{ learning: { lang: string, voices?: Record<string, string> } }} settings */
@@ -139,8 +142,19 @@ export class Speech {
    * built from when it has no clip of its own (a breakdown sum). Resolves when
    * the last one finishes (or is interrupted), or right away if nothing can speak.
    */
-  say(steps, langId, { rate = 0.92 } = {}) {
+  say(steps, langId, options) {
     this.cancel();
+    // Right after page load the manifest may still be on its way: wait for it
+    // (briefly), or the first utterance would go to the browser voice.
+    if (this.clips[langId] === undefined && !this.settings.learning.voices?.[langId]) {
+      const token = this.token;
+      const loaded = Promise.race([this.loadClips(langId), wait(MANIFEST_WAIT)]);
+      return loaded.then(() => (token === this.token ? this.speak(steps, langId, options) : undefined));
+    }
+    return this.speak(steps, langId, options);
+  }
+
+  speak(steps, langId, { rate = 0.92 } = {}) {
     const tag = learnLang(langId).speechLang;
     const list = (Array.isArray(steps) ? steps : [steps]).map((s) => (typeof s === 'string' ? { text: s } : s));
 
