@@ -1,11 +1,25 @@
 {
   "name": "dino-runner",
   "version": "1.0.0",
-  "description": "An ad-free, customizable endless dino runner. No build step, no dependencies.",
+  "description": "An ad-free, customizable endless dino runner. No build step, no runtime dependencies.",
   "private": true,
   "type": "module",
   "scripts": {
-    "start": "python3 -m http.server 8080"
+    "start": "python3 -m http.server 8080",
+    "serve": "node scripts/serve.mjs",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:e2e": "start-server-and-test serve http://127.0.0.1:8765/index.html cy:run",
+    "test:e2e:open": "start-server-and-test serve http://127.0.0.1:8765/index.html cy:open",
+    "cy:run": "cypress run --browser electron",
+    "cy:open": "cypress open --e2e",
+    "test:all": "npm test && npm run test:e2e"
   },
-  "license": "MIT"
+  "license": "MIT",
+  "devDependencies": {
+    "cypress": "^16.2.1",
+    "jsdom": "^29.1.1",
+    "start-server-and-test": "^3.0.13",
+    "vitest": "^5.1.0"
+  }
 }

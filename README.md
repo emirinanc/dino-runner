@@ -141,6 +141,19 @@ This calls Google Cloud Text-to-Speech with the API key in `~/.config/dino-runne
 - **What's said aloud:** the phrases in `LEARN_LANGS`. The breakdown narration is built in `breakdownScript()`.
 - **Number game:** round length, how questions are generated (`makeQuestions`) and the answer choices (`options`) are in `src/learn/numbergame.js`.
 
+## Tests
+
+The game itself needs no install; the tests do (`npm install` once).
+
+```sh
+npm test            # unit tests (Vitest): number words, phrases ↔ voice clips, speech, settings, characters, number game
+npm run test:e2e    # Cypress, headless: dialogs and Space, number game rounds, score card, settings, voices
+npm run test:all    # both
+npm run test:e2e:open   # Cypress with its window, to watch or debug a test
+```
+
+What is tested where, and why, is in [docs/test-strategy.md](docs/test-strategy.md). Changed a phrase? `npm test` fails until its voice clip is generated (`node tools/voice/generate.mjs`).
+
 ## Notes
 
 - The high score is stored only in your browser's localStorage, and isn't updated while invincible or when the speed multiplier isn't 1×.
