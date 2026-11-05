@@ -32,6 +32,12 @@ const ui = new UI(game, settings, sound);
 ui.init();
 bindInput(game, document.getElementById('play-area'));
 
+// Keeps the files of a page load from the same version (see sw.js). Not under
+// Cypress, whose tests stub the network themselves.
+if ('serviceWorker' in navigator && !window.Cypress) {
+  navigator.serviceWorker.register('sw.js').catch(() => {});
+}
+
 // Expose for tinkering from the dev console: game.speed = 20, game.settings.invincible = true …
 window.game = game;
 window.ui = ui;

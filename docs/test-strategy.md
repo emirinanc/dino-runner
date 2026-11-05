@@ -222,10 +222,17 @@ must be fixed, not retried.
 
 ## Known gaps and findings
 
-- **Manifest race (R1)**: `speech.test.js` › "before the clip manifest has
-  loaded" and `voice.cy.js` › "reads 0 with a clip even when the clip
-  manifest arrives late" describe the expected behaviour. They fail until the
-  fix in `speech.js` lands.
+- **Manifest race (R1)**: covered by `speech.test.js` › "before the clip
+  manifest has loaded" and `voice.cy.js` › "reads 0 with a clip even when the
+  clip manifest arrives late"; `say()` now waits briefly for the manifest.
+- **Mixed versions after a deploy**: the browser cached each file on its own,
+  so a page could get a new `index.html` with an old `numbergame.js`, and the
+  number game opened empty. No test caught it, because every test loads one
+  consistent copy of the site. `sw.js` now revalidates every file on each load;
+  `sw.test.js` covers its rules. Cypress runs without the service worker (it
+  stubs the network itself), so the update itself is only checked by hand: load
+  the page twice, change `index.html` and `numbergame.js` together, reload, and
+  the number game must still open.
 - `NumberGame.chain()` can create a sum above the limit when `maxNumber` is
   below 3 (for example 1 + 2 with a limit of 2). The UI only offers 5, 10 and
   20, so this can't happen today; worth guarding if smaller limits are ever

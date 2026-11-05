@@ -38,6 +38,7 @@ The game object is exposed as `window.game` for tinkering in the dev console, e.
 
 ```
 index.html            page markup (toolbar, score card, dialogs)
+sw.js                 service worker: every load gets one version of every file
 css/style.css         page styles; colors come from the active theme
 src/
   main.js             bootstraps everything, reads URL options
